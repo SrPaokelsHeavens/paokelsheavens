@@ -1,0 +1,31 @@
+---
+interface Props {
+  platform: string;
+  url: string;
+  description: string;
+  color: string;
+  iconName: string;
+}
+
+const { platform, url, description, color, iconName } = Astro.props;
+---
+
+<a href={url} target="_blank" rel="noopener noreferrer" class="group relative bg-void-light border border-gold/10 p-8 hover:border-gold/40 transition-all overflow-hidden">
+  <!-- Efecto de fondo al hacer hover -->
+  <div class={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500`} style={`background-color: ${color};`}></div>
+  
+  <div class="relative z-10 flex flex-col items-center text-center">
+    <div class="mb-4 text-gold/60 group-hover:text-gold transition-colors">
+        <!-- Placeholder para icono (se reemplazará con SVG real en el render) -->
+        <div class="w-12 h-12 flex items-center justify-center border border-gold/20 rounded-full group-hover:border-gold/50 transition-all">
+            <span class="font-serif text-xl">{platform[0]}</span>
+        </div>
+    </div>
+    
+    <h3 class="text-gold font-serif tracking-[0.2em] uppercase mb-2">{platform}</h3>
+    <p class="text-[10px] text-[#D1D1C7]/40 italic uppercase tracking-widest">{description}</p>
+  </div>
+
+  <!-- Borde decorativo esquina -->
+  <div class="absolute top-0 right-0 w-8 h-8 border-t border-r border-gold/5 group-hover:border-gold/30 transition-all"></div>
+</a>

@@ -1,0 +1,223 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getLangFromUrl, useTranslations, useLocalizedPath } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  const novels = await getCollection('library', ({ data }) => data.type === 'novel');
+  
+  return novels.map(novel => {
+    const cleanSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
+    return {
+      params: { slug: cleanSlug },
+      props: { novel },
+    };
+  });
+}
+
+const { novel } = Astro.props;
+const { title, description, author, status, genres, cover, id } = novel.data as any;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const l = useLocalizedPath(lang);
+
+// 1. Fetch all volumes for this novel
+const volumes = await getCollection('library', (entry) => {
+  return entry.data.type === 'volume' && (entry.data as any).novel_id === id;
+});
+volumes.sort((a, b) => (a.data as any).vol_number - (b.data as any).vol_number);
+
+// 2. Fetch all chapters for this novel
+const allChapters = await getCollection('library', (entry) => {
+  return entry.data.type === 'chapter' && (entry.data as any).novel_id === id;
+});
+
+// Helper to get chapters for a specific volume
+const getChaptersForVolume = (volId: string) => {
+  return allChapters
+    .filter(ch => (ch.data as any).vol_id === volId)
+    .sort((a, b) => (a.data as any).chapter_number - (b.data as any).chapter_number);
+};
+
+const firstChapter = allChapters.sort((a, b) => {
+    const aData = a.data as any;
+    const bData = b.data as any;
+    if (aData.vol_number !== bData.vol_number) return aData.vol_number - bData.vol_number;
+    return aData.chapter_number - bData.chapter_number;
+})[0];
+
+const cleanNovelSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
+---
+
+<BaseLayout title={title}>
+  <div class="relative py-20 overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-[400px] opacity-20 z-0">
+        <img src={cover} alt="" class="w-full h-full object-cover blur-xl" />
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-void"></div>
+    </div>
+
+    <div class="container mx-auto px-4 relative z-10">
+      <!-- Header Section -->
+      <div class="mb-12">
+        <div class="flex flex-wrap gap-3 mb-6">
+          {genres?.map((genre: string) => (
+            <span class="text-[9px] uppercase tracking-widest text-gold border border-gold/30 px-3 py-1 bg-gold/5">
+              {genre}
+            </span>
+          ))}
+          <span class="text-[9px] uppercase tracking-widest px-3 py-1 border border-gold/20 text-gold">
+            {status}
+          </span>
+        </div>
+        <h1 class="text-4xl md:text-7xl font-serif text-gold mb-4 uppercase tracking-tighter leading-none">{title}</h1>
+        <div class="flex gap-6 text-xs text-[#D1D1C7]/40 uppercase tracking-widest font-serif">
+           <span>Penned by {author}</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-12 items-start mb-24">
+        <div class="w-full md:w-1/3 max-w-[350px] mx-auto md:mx-0 shadow-2xl border border-gold/20">
+          <img src={cover} alt={title} class="w-full h-auto" />
+        </div>
+
+        <div class="flex-1 space-y-8">
+          <div class="p-6 bg-void-light border-l-4 border-gold/20 italic text-[#D1D1C7]/80 text-sm leading-relaxed whitespace-pre-line">"{description}"</div>
+
+          <div class="flex gap-4 pt-4">
+            {firstChapter ? (
+                <a href={l(`library/${firstChapter.slug}`)} class="bg-gold text-void px-10 py-4 font-serif font-bold text-xs tracking-[0.2em] hover:bg-[#D4AF37] transition-all uppercase shadow-lg">
+                  Read First Chapter
+                </a>
+            ) : (
+                <button disabled class="bg-gray-800 text-gray-500 px-10 py-4 font-serif font-bold text-xs tracking-widest cursor-not-allowed uppercase">
+                  Not available yet
+                </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <!-- --- NEW INTERACTIVE INDEX --- -->
+      <section id="novel-index" class="mt-32" data-novel-id={id}>
+        <h2 class="text-2xl font-serif text-gold mb-8 uppercase tracking-[0.4em] text-center md:text-left">{t('reader.index')}</h2>
+        
+        <!-- Volume Selector Bar -->
+        <div class="flex flex-wrap justify-center md:justify-start gap-4 mb-12 border-b border-gold/10 pb-8">
+          {volumes.map((volume, index) => (
+            <button 
+              data-vol-tab={volume.data.id}
+              class="volume-tab group relative flex items-center gap-3 px-6 py-3 border border-gold/10 hover:border-gold/40 transition-all duration-500 overflow-hidden"
+            >
+              <span class="text-2xl font-serif italic text-gold/20 group-hover:text-gold/60 transition-colors">
+                {String((volume.data as any).vol_number).padStart(2, '0')}
+              </span>
+              <span class="vol-full-name hidden text-[10px] text-gold uppercase tracking-[0.2em] animate-fade-in">
+                {(volume.data as any).title}
+              </span>
+              <div class="active-glow absolute inset-0 bg-gold/5 opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
+              <div class="active-line absolute bottom-0 left-0 w-full h-px bg-gold scale-x-0 group-[.active]:scale-x-100 transition-transform duration-500"></div>
+            </button>
+          ))}
+        </div>
+
+        <!-- Chapters Container -->
+        <div id="volumes-content-wrapper">
+          {volumes.map(volume => {
+            const volChapters = getChaptersForVolume(volume.data.id as string);
+            return (
+              <div 
+                id={`content-${volume.data.id}`} 
+                class="volume-content-pane hidden animate-fade-in"
+              >
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {volChapters.map(chapter => (
+                    <a 
+                      href={l(`library/${chapter.slug}`)} 
+                      data-chapter-id={chapter.id}
+                      class="group p-5 bg-void-light/30 border border-gold/5 hover:border-gold/30 hover:bg-gold/5 transition-all flex items-center justify-between"
+                    >
+                        <div>
+                            <span class="text-[8px] text-gold/40 uppercase tracking-widest block mb-2">Entry {(chapter.data as any).chapter_number}</span>
+                            <h3 class="text-sm text-[#D1D1C7] font-serif group-hover:text-gold transition-colors">{chapter.data.title}</h3>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity text-gold">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <style is:global>
+    .volume-tab.active {
+      border-color: rgba(197, 160, 89, 0.4) !important;
+      box-shadow: 0 0 20px rgba(197, 160, 89, 0.1);
+      background: rgba(197, 160, 89, 0.05);
+    }
+    .volume-tab.active .vol-full-name {
+      display: inline-block !important;
+    }
+    .volume-tab.active .text-gold\/20 {
+      color: #c5a059 !important;
+      opacity: 1;
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+  <script is:inline define:vars={{ novelId: id }}>
+    function initIndex() {
+      const tabs = document.querySelectorAll('[data-vol-tab]');
+      const contents = document.querySelectorAll('.volume-content-pane');
+      
+      function switchVolume(volId) {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.add('hidden'));
+        
+        const activeTab = document.querySelector(`[data-vol-tab="${volId}"]`);
+        const activeContent = document.getElementById(`content-${volId}`);
+        
+        if (activeTab && activeContent) {
+          activeTab.classList.add('active');
+          activeContent.classList.remove('hidden');
+        }
+      }
+
+      tabs.forEach(tab => {
+        tab.onclick = () => switchVolume(tab.getAttribute('data-vol-tab'));
+      });
+
+      // --- AUTODETECT LAST READ VOLUME ---
+      const progressMap = JSON.parse(localStorage.getItem('reading-progress-map') || '{}');
+      const novelId = document.getElementById('novel-index')?.getAttribute('data-novel-id');
+      
+      let targetVol = tabs[0]?.getAttribute('data-vol-tab'); // Default to Vol 1
+
+      if (novelId && progressMap[novelId]) {
+        const lastVolId = progressMap[novelId].volId;
+        if (lastVolId) {
+          targetVol = lastVolId;
+        }
+      }
+
+      if (targetVol) switchVolume(targetVol);
+    }
+
+    initIndex();
+    document.addEventListener('astro:page-load', initIndex);
+  </script>
+</BaseLayout>

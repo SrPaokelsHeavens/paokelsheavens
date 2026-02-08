@@ -1,0 +1,54 @@
+---
+import { ui, defaultLang, languages } from '../../i18n/ui';
+
+const url = Astro.url;
+const pathSegments = url.pathname.split('/').filter(Boolean);
+const lang = Object.keys(languages).includes(pathSegments[0]) ? pathSegments[0] : defaultLang;
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+---
+
+<div id="continue-reading-container" class="hidden mt-12 animate-fade-in">
+    <div class="inline-block p-1 border border-gold/20 bg-gold/5 rounded-lg group hover:border-gold/40 transition-all">
+        <a id="continue-reading-link" href="#" class="flex items-center gap-4 px-6 py-3">
+            <div class="text-left">
+                <span class="text-[8px] uppercase tracking-[0.3em] text-gold/50 block mb-1">CONTINUE ASCENSION</span>
+                <span id="last-read-title" class="text-xs font-serif text-gold group-hover:text-[#D4AF37] transition-colors uppercase tracking-widest">
+                    Loading Annals...
+                </span>
+            </div>
+            <div class="w-8 h-8 rounded-full border border-gold/20 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-void transition-all">
+                →
+            </div>
+        </a>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('continue-reading-container');
+    const link = document.getElementById('continue-reading-link') as HTMLAnchorElement;
+    const title = document.getElementById('last-read-title');
+
+    const lastRead = localStorage.getItem('last-read');
+    if (lastRead) {
+        try {
+            const data = JSON.parse(lastRead);
+            if (data && data.path) {
+                container.classList.remove('hidden');
+                title.innerText = `${data.novelTitle} - ${data.chapterTitle}`;
+                link.href = data.path;
+            }
+        } catch (e) {
+            console.error('Error reading annals:', e);
+        }
+    }
+</script>
+
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fade-in 0.8s ease-out forwards;
+    }
+</style>

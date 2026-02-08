@@ -1,0 +1,78 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { defaultLang, ui, languages } from '../../i18n/ui';
+
+export async function getStaticPaths() {
+  const newsEntries = await getCollection('news');
+  return newsEntries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const url = Astro.url;
+const pathSegments = url.pathname.split('/').filter(Boolean);
+const lang = Object.keys(languages).includes(pathSegments[0]) ? pathSegments[0] : defaultLang;
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+---
+
+<BaseLayout title={entry.data.title}>
+  <div class="relative py-24 overflow-hidden min-h-screen">
+    <!-- Background Decoration -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-[0.03] pointer-events-none select-none">
+        <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,#C5A059_0%,transparent_70%)]"></div>
+    </div>
+
+    <div class="container mx-auto px-4 max-w-3xl relative z-10">
+      <!-- News Header - Strict Vertical Sequence -->
+      <header class="mb-20 text-center flex flex-col items-center">
+        <!-- Line 1: Back Link -->
+        <a href="/news" class="group inline-flex items-center gap-2 text-[10px] text-gold/30 hover:text-gold uppercase tracking-[0.4em] mb-12 transition-all w-full justify-center">
+          <span class="group-hover:-translate-x-1 transition-transform">«</span> Return to the Annals
+        </a>
+        
+        <!-- Line 2: Category Tags -->
+        <div class="mb-10 w-full flex justify-center">
+          <span class="text-[9px] text-gold border border-gold/40 px-4 py-1 uppercase tracking-[0.3em] bg-gold/5">{entry.data.category}</span>
+        </div>
+
+        <!-- Line 3: The Title -->
+        <h1 class="text-4xl md:text-7xl font-serif text-gold mb-12 uppercase tracking-tighter leading-[0.9] w-full">
+          {entry.data.title}
+        </h1>
+        
+        <!-- Line 4: Author -->
+        <div class="text-[10px] text-gold/40 uppercase tracking-[0.2em] font-serif italic mb-4 w-full">
+          Penned by {entry.data.author}
+        </div>
+
+        <!-- Line 5: Release Date -->
+        <div class="text-[9px] text-[#D1D1C7]/20 uppercase tracking-widest w-full">
+          Released on {entry.data.publishDate}
+        </div>
+      </header>
+
+      <!-- News Content -->
+      <article class="prose prose-invert prose-gold max-w-none text-lg leading-relaxed font-serif first-letter:text-5xl first-letter:font-serif first-letter:text-gold first-letter:mr-3 first-letter:float-left drop-shadow-sm">
+        <Content />
+      </article>
+
+      <!-- Post-Reading Actions -->
+      <div class="mt-32 pt-16 border-t border-gold/10">
+        <div class="bg-void-light border border-gold/5 p-12 text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gold/[0.01] group-hover:bg-gold/[0.03] transition-colors"></div>
+            <h3 class="text-gold font-serif text-xl mb-4 uppercase tracking-widest relative z-10">Join the Conversation</h3>
+            <p class="text-sm text-[#D1D1C7]/40 mb-8 italic relative z-10">"Disciples who share wisdom grow faster than those who hoard it."</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+                <a href="/community" class="bg-gold text-void px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-[#D4AF37] transition-all uppercase">Enter Discord Pavilion</a>
+                <a href="/donations" class="border border-gold/30 text-gold px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-gold/10 transition-all uppercase">Support the Sect</a>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CelestialCarousel from '../components/Chronicles/CelestialCarousel.astro';
+import ReadingProgress from '../components/ui/ReadingProgress.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations, useLocalizedPath } from '../i18n/utils';
+
+// Language detection
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const l = useLocalizedPath(lang);
+
+// --- NEW DATA FETCHING (Unified Library + News) ---
+const allChapters = await getCollection('library', (entry) => entry.data.type === 'chapter');
+const allNews = await getCollection('news');
+
+const chapterEvents = allChapters.map(ch => {
+  const data = ch.data as any;
+  return {
+    id: ch.id,
+    type: 'chapter',
+    platform: 'web',
+    title: `${data.novel_title}: ${data.title}`,
+    excerpt: `A new chapter has been transcribed: ${data.title} (Vol. ${data.vol_number}, Ch. ${data.chapter_number})`,
+    url: l(`library/${ch.slug}`),
+    image: (data.novel_id === 'ultimate-martial-will') 
+           ? 'https://i.ibb.co/wNPbn6R6/Ultimate-martial-will-cover.png' 
+           : 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1000',
+    metadata: { 
+      date: data.publishDate || 'Recent', 
+      author: data.author || 'Sr. Paokel' 
+    },
+    timestamp: new Date(data.publishDate || Date.now()).getTime()
+  };
+});
+
+const newsEvents = allNews.map(n => ({
+  id: n.id,
+  type: 'news',
+  platform: 'web',
+  title: n.data.title,
+  excerpt: n.data.excerpt,
+  image: (n.data as any).image,
+  url: l('news'),
+  metadata: { 
+    date: n.data.publishDate, 
+    author: (n.data as any).author 
+  },
+  timestamp: new Date(n.data.publishDate).getTime()
+}));
+
+// Combine and sort events
+const allEvents = [...chapterEvents, ...newsEvents].sort((a, b) => b.timestamp - a.timestamp);
+---
+
+<BaseLayout title="Home">
+	<!-- Hero Section -->
+	<section class="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-20">
+		<div class="absolute inset-0 z-0">
+			<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold/5 blur-[120px] rounded-full animate-pulse"></div>
+			<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blood/5 blur-[150px] rounded-full animate-pulse" style="animation-delay: 2s;"></div>
+		</div>
+		
+		<div class="container mx-auto px-4 relative z-10 text-center">
+			<div class="inline-block mb-8 px-4 py-1.5 border border-gold/20 rounded-full bg-gold/5 text-[9px] tracking-[0.4em] text-gold uppercase animate-pulse">
+				Immortal Path • {lang.toUpperCase()}
+			</div>
+			
+			<h1 class="text-6xl md:text-8xl lg:text-9xl font-serif font-bold mb-10 tracking-tighter leading-[0.8] transition-all">
+				<span class="text-gold block">PAOKELS</span>
+				<span class="text-[#D1D1C7] opacity-80 italic text-4xl md:text-6xl lg:text-7xl">HEAVENS</span>
+			</h1>
+			
+			<div class="max-w-3xl mx-auto mb-16">
+				<p class="text-base md:text-lg text-[#D1D1C7]/70 font-light leading-relaxed italic font-serif">
+					"{t('hero.speech')}"
+				</p>
+			</div>
+			
+			<div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+				<a href={l('library')} class="w-full md:w-auto bg-gold text-void px-12 py-5 font-serif font-bold tracking-[0.2em] text-[11px] hover:bg-[#D4AF37] hover:shadow-[0_0_30px_rgba(197,160,89,0.3)] transition-all transform hover:-translate-y-1">
+					{t('hero.cta.read')}
+				</a>
+				<a href={l('community')} class="w-full md:w-auto border border-gold/40 text-gold px-12 py-5 font-serif font-bold tracking-[0.2em] text-[11px] hover:bg-gold/10 transition-all">
+					{t('hero.cta.join')}
+				</a>
+			</div>
+
+			<ReadingProgress />
+		</div>
+
+		<div class="absolute left-8 top-1/2 -translate-y-1/2 hidden lg:block opacity-10 [writing-mode:vertical-rl] text-gold text-[10px] tracking-[1.5em] uppercase">
+			Resilience • Power • Ascension
+		</div>
+		<div class="absolute right-8 top-1/2 -translate-y-1/2 hidden lg:block opacity-10 [writing-mode:vertical-rl] text-gold text-[10px] tracking-[1.5em] uppercase">
+			Wisdom • Fate • Honor
+		</div>
+	</section>
+
+	<!-- Sección Chronicles -->
+	<section class="py-24 bg-void-light/40 border-y border-gold/5 overflow-hidden">
+		<div class="container mx-auto px-4 mb-12">
+			<h2 class="text-3xl font-serif text-center tracking-[0.3em] uppercase text-gold">{t('chronicles.title')}</h2>
+			<div class="w-32 h-px bg-gold/20 mx-auto mt-6"></div>
+		</div>
+		
+		<CelestialCarousel events={allEvents} />
+	</section>
+</BaseLayout>

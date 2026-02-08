@@ -1,0 +1,60 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import ChapterReader from '../../../../components/Reader/ChapterReader.astro';
+import { getLangFromUrl } from '../../../../i18n/utils';
+
+export async function getStaticPaths() {
+  const libraryEntries = await getCollection('library', ({ data }) => data.type === 'chapter');
+  
+  return libraryEntries.map(chapter => {
+    const parts = chapter.slug.split('/'); // e.g., ["jade-throne-shadow", "vol-1", "ch-1"]
+    const novelSlug = parts[0];
+    const chapterPath = parts.slice(1).join('/'); // e.g., "vol-1/ch-1"
+
+    return {
+      params: { 
+        novelSlug,
+        chapterPath
+      },
+      props: { chapter, novelSlug },
+    };
+  });
+}
+
+const { chapter, novelSlug } = Astro.props;
+
+// Fetch the novel metadata from the new collection using novel_id from chapter data
+const novel = await getEntry('library', (chapter.data as any).novel_id);
+const lang = getLangFromUrl(Astro.url);
+
+// --- NEW NAVIGATION LOGIC (Relational & Hierarchical) ---
+// 1. Get all chapters for this specific novel
+const allChapters = await getCollection('library', (entry) => {
+  return entry.data.type === 'chapter' && (entry.data as any).novel_id === (chapter.data as any).novel_id;
+});
+
+// 2. Sort by Volume Number, then by Chapter Number (Universal Ordering)
+allChapters.sort((a, b) => {
+  const aData = a.data as any;
+  const bData = b.data as any;
+  if (aData.vol_number !== bData.vol_number) {
+    return aData.vol_number - bData.vol_number;
+  }
+  return aData.chapter_number - bData.chapter_number;
+});
+
+const currentIndex = allChapters.findIndex(c => c.id === chapter.id);
+const prevChapter = allChapters[currentIndex - 1];
+const nextChapter = allChapters[currentIndex + 1];
+---
+
+<BaseLayout title={`${novel?.data.title} - ${chapter.data.title || 'Reader'}`}>
+  <ChapterReader 
+    chapter={chapter} 
+    novel={novel} 
+    prevChapter={prevChapter} 
+    nextChapter={nextChapter} 
+    lang={lang} 
+  />
+</BaseLayout>

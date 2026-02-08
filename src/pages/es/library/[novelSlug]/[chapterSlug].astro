@@ -1,0 +1,47 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import ChapterReader from '../../../../components/Reader/ChapterReader.astro';
+import { getLangFromUrl } from '../../../../i18n/utils';
+
+export async function getStaticPaths() {
+  const chapters = await getCollection('chapters');
+  return chapters.map(chapter => {
+    const parts = chapter.slug.split('/');
+    const chapterSlug = parts.slice(1).join('/');
+    const novelSlug = parts[0];
+
+    return {
+      params: { 
+        novelSlug: novelSlug,
+        chapterSlug: chapterSlug 
+      },
+      props: { chapter, novelSlug },
+    };
+  });
+}
+
+const { chapter, novelSlug } = Astro.props;
+const novel = await getEntry('novels', novelSlug);
+const lang = getLangFromUrl(Astro.url);
+
+// Navigation Logic
+const allChapters = await getCollection('chapters', (entry) => {
+  return entry.slug.startsWith(novelSlug + '/');
+});
+allChapters.sort((a, b) => (a.data.number || 0) - (b.data.number || 0));
+
+const currentIndex = allChapters.findIndex(c => c.slug === chapter.slug);
+const prevChapter = allChapters[currentIndex - 1];
+const nextChapter = allChapters[currentIndex + 1];
+---
+
+<BaseLayout title={`${novel?.data.title} - ${chapter.data.title}`}>
+  <ChapterReader 
+    chapter={chapter} 
+    novel={novel} 
+    prevChapter={prevChapter} 
+    nextChapter={nextChapter} 
+    lang={lang} 
+  />
+</BaseLayout>

@@ -1,0 +1,104 @@
+---
+import { defaultLang, ui, languages } from '../../i18n/ui';
+
+interface Props {
+  novel: any;
+}
+
+const { novel } = Astro.props;
+const { title, description, author, status, genres, cover } = novel.data;
+
+const url = Astro.url;
+const pathSegments = url.pathname.split('/').filter(Boolean);
+const lang = Object.keys(languages).includes(pathSegments[0]) ? pathSegments[0] : defaultLang;
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+// Clean slug for routing: ensure we only take the folder name
+const cleanSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
+---
+
+<div class="group relative bg-void-light border border-gold/10 overflow-hidden transition-all hover:border-gold/40 hover:shadow-[0_0_30px_rgba(197,160,89,0.15)]">
+  <!-- Main Card Link -->
+  <a href={lang === defaultLang ? `/library/${cleanSlug}` : `/${lang}/library/${cleanSlug}`} class="block">
+    <!-- Imagen de Portada -->
+    <div class="aspect-[2/3] overflow-hidden relative">
+      <div class="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent z-10 opacity-60"></div>
+      <img 
+        src={cover} 
+        alt={title} 
+        class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+        onerror="this.src='https://placehold.co/400x600/0a0a0b/C5A059?text=Sin+Portada'"
+      />
+      
+      <!-- Badge de Estado -->
+      <div class={`absolute top-4 right-4 z-20 px-2 py-1 text-[8px] font-serif uppercase tracking-widest border ${status === 'En curso' ? 'border-gold/50 text-gold bg-void/80' : 'border-blood/50 text-blood bg-void/80'}`}>
+        {status}
+      </div>
+
+      <!-- Progress Indicator (Client-side) - Moved to prevent layout shift -->
+      <div data-progress-for={novel.slug} class="hidden absolute top-4 left-4 z-20">
+        <span class="text-[8px] bg-gold text-void px-2 py-1 font-bold uppercase tracking-tighter shadow-lg">
+          In Progress
+        </span>
+      </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="p-5 relative">
+      <div class="mb-2 flex flex-wrap gap-2 justify-between items-start">
+        <div class="flex gap-2">
+          {genres.slice(0, 2).map((genre: string) => (
+            <span class="text-[8px] uppercase tracking-tighter text-gold/60 border border-gold/10 px-1.5 py-0.5">
+              {genre}
+            </span>
+          ))}
+        </div>
+      </div>
+      
+      <h3 class="text-lg font-serif text-gold group-hover:text-[#D4AF37] transition-colors mb-2 line-clamp-1">
+        {title}
+      </h3>
+      
+      <p class="text-[10px] text-[#D1D1C7]/60 line-clamp-2 italic mb-4">
+        "{description}"
+      </p>
+      
+      <div class="flex justify-between items-center pt-4 border-t border-gold/5">
+        <span class="text-[9px] text-gold/30 uppercase tracking-widest">{t['library.written_by']} {author}</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- Independent Continue Button -->
+  <div class="absolute bottom-4 right-5 z-30">
+    <a 
+      id={`continue-${novel.slug.replace(/\//g, '-')}`} 
+      href="#" 
+      style="display: none;"
+      class="text-[10px] text-gold border border-gold/40 px-3 py-1.5 bg-void/90 hover:bg-gold hover:text-void transition-all uppercase tracking-tighter shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+    >
+      Continue
+    </a>
+  </div>
+</div>
+
+<script is:inline define:vars={{ novelId: novel.data.id }}>
+  // Check for novel progress on component mount
+  const progressMap = JSON.parse(localStorage.getItem('reading-progress-map') || '{}');
+  
+  if (novelId && progressMap[novelId]) {
+    const data = progressMap[novelId];
+    if (data.path) {
+      // Show "In Progress" badge
+      const badge = document.querySelector(`[data-progress-for="${novelId}"]`);
+      if (badge) badge.classList.remove('hidden');
+      
+      // Show and update Continue link
+      const continueLink = document.getElementById(`continue-${novelId}`);
+      if (continueLink) {
+        continueLink.style.display = 'inline-block';
+        continueLink.href = data.path;
+        continueLink.title = `Continue: ${data.chapterTitle}`;
+      }
+    }
+  }
+</script>

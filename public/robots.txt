@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://srpaokelsheavens.eu.org/sitemap-index.xml

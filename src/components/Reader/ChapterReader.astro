@@ -1,0 +1,305 @@
+---
+import { getLangFromUrl, useTranslations, useLocalizedPath } from '../../i18n/utils';
+
+interface Props {
+  chapter: any;
+  novel: any;
+  prevChapter: any;
+  nextChapter: any;
+  lang: any;
+}
+
+const { chapter, novel, prevChapter, nextChapter, lang } = Astro.props;
+const { Content } = await chapter.render();
+
+const t = useTranslations(lang);
+const l = useLocalizedPath(lang);
+
+const getCleanUrl = (c: any) => {
+    return l(`library/${c.slug}`);
+};
+
+const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the chronicles?';
+---
+
+<div id="reader-container" class="min-h-screen transition-colors duration-500 pt-10 pb-32 w-full max-w-none overflow-x-hidden">
+  <div class="w-full px-4 md:px-12 lg:px-24 mx-auto box-border max-w-none">
+    
+    <!-- Professional Compact Toolbar -->
+    <div id="reader-toolbar" class="sticky top-20 z-40 flex flex-col bg-void/70 backdrop-blur-xl border border-gold/10 p-2 mb-12 rounded-xl transition-all duration-500 shadow-2xl w-full box-border">
+      <div class="flex flex-wrap justify-between items-center w-full gap-2">
+        
+        <!-- Atmosphere Custom Dropdown -->
+        <div class="relative custom-dropdown" id="theme-dropdown">
+          <button class="dropdown-trigger flex items-center gap-2 px-3 py-1 bg-void/40 border border-gold/10 rounded-lg hover:border-gold/40 transition-all group">
+            <span class="dot w-2 h-2 rounded-full bg-gold shadow-[0_0_5px_rgba(197,160,89,0.5)]"></span>
+            <span class="trigger-label text-[9px] text-gold/70 uppercase tracking-widest font-bold">Atmosphere</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-gold/30 ml-1"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="dropdown-menu hidden absolute left-0 top-10 w-44 bg-void/98 border border-gold/20 p-1 rounded-lg shadow-2xl z-50 animate-fade-in backdrop-blur-2xl">
+            <button class="dropdown-opt w-full flex items-center gap-3 px-3 py-2 hover:bg-gold/10 text-[10px] text-gold/60 uppercase rounded-lg text-left" data-value="void">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#050505] border border-gold/20 shadow-inner"></span> Void
+            </button>
+            <button class="dropdown-opt w-full flex items-center gap-3 px-3 py-2 hover:bg-gold/10 text-[10px] text-gold/60 uppercase rounded-lg text-left" data-value="parchment">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f4ecd8] border border-black/10 shadow-inner"></span> Parchment
+            </button>
+            <button class="dropdown-opt w-full flex items-center gap-3 px-3 py-2 hover:bg-gold/10 text-[10px] text-gold/60 uppercase rounded-lg text-left" data-value="imperial">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#3d0a0a] border border-gold/20 shadow-inner"></span> Imperial
+            </button>
+          </div>
+        </div>
+
+        <!-- Toolbar Toolset -->
+        <div class="flex items-center gap-2 sm:gap-4 ml-auto">
+            <button id="voice-toggle" class="text-gold/40 hover:text-gold transition-all p-1.5 hover:bg-gold/5 rounded-lg" title="Celestial Voice">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            </button>
+
+            <button id="font-bar-toggle" class="text-gold/40 hover:text-gold transition-all p-1.5 hover:bg-gold/5 rounded-lg" title="Typography Archives">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+            </button>
+
+            <div class="w-px h-5 bg-gold/10 mx-1"></div>
+            
+            <button id="fullscreen-toggle" class="text-gold/40 hover:text-gold transition-all p-1.5 hover:bg-gold/5 rounded-lg" title="Toggle Immersion">
+                <svg id="expand-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 3 6 6"/><path d="m9 21-6-6"/><path d="M21 3v6h-6"/><path d="M3 21v-6h6"/></svg>
+                <svg id="shrink-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 10 6-6"/><path d="m3 21 7-7"/><path d="M21 3h-7v7"/><path d="M3 21h7v-7"/></svg>
+            </button>
+
+            <div class="flex items-center gap-1 border-l border-gold/10 pl-3">
+                <button id="font-dec-main" class="text-gold/50 hover:text-gold text-xs font-bold w-8 h-8 flex items-center justify-center rounded-lg">-</button>
+                <button id="font-inc-main" class="text-gold/50 hover:text-gold text-xs font-bold w-8 h-8 flex items-center justify-center rounded-lg">+</button>
+            </div>
+        </div>
+      </div>
+
+      <!-- Voice Bar (Functional Shell) -->
+      <div id="voice-controls" class="hidden w-full mt-4 pt-4 border-t border-gold/10 flex flex-wrap items-center justify-center gap-6 animate-fade-in">
+          <div class="flex items-center gap-4">
+              <button id="voice-play" class="text-gold hover:scale-110 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+              <button id="voice-pause" class="hidden text-gold hover:scale-110 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+              <button id="voice-restart" class="text-gold/40 hover:text-gold transition-colors" title="Restart Chronicle">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>
+          </div>
+          <div class="flex items-center gap-2 flex-grow max-w-sm">
+              <span class="text-[8px] text-gold/40 uppercase font-sans tracking-widest font-bold">Voice</span>
+              <select id="voice-select" class="w-full bg-void text-gold border border-gold/20 text-[10px] px-2 py-1.5 rounded-lg outline-none focus:border-gold truncate"><option value="">Awaiting Order...</option></select>
+          </div>
+          <div class="flex items-center gap-2">
+              <span class="text-[8px] text-gold/40 uppercase tracking-widest font-sans font-bold">Speed</span>
+              <select id="voice-speed" class="bg-void text-gold border border-gold/20 text-[10px] px-2 py-1.5 rounded-lg outline-none focus:border-gold"><option value="0.8">0.8x</option><option value="1" selected>1.0x</option><option value="1.5">1.5x</option><option value="2">2.0x</option></select>
+          </div>
+      </div>
+
+      <!-- Typography Bar -->
+      <div id="font-controls" class="hidden w-full mt-4 pt-4 border-t border-gold/10 flex flex-wrap items-center justify-between gap-6 animate-fade-in">
+          <div class="flex items-center gap-3">
+              <span class="text-[8px] text-gold/40 uppercase font-sans tracking-widest">Script</span>
+              <div class="relative custom-dropdown" id="family-dropdown">
+                <button class="dropdown-trigger flex items-center gap-2 px-3 py-1 bg-void/40 border border-gold/10 rounded-lg hover:border-gold/40 transition-all">
+                  <span class="trigger-label text-[10px] text-gold/70 uppercase tracking-widest font-medium">Sect Heritage</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-gold/30 ml-1"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="dropdown-menu hidden absolute left-0 top-10 w-56 bg-void/98 border border-gold/20 p-1.5 rounded-xl shadow-2xl z-50 animate-fade-in backdrop-blur-2xl">
+                  <button class="dropdown-opt w-full px-4 py-3 hover:bg-gold/10 text-[11px] text-gold/60 text-left rounded-lg transition-all" data-value="inherit">Sect Heritage (Default)</button>
+                  <button class="dropdown-opt w-full px-4 py-3 hover:bg-gold/10 text-[11px] text-gold/60 text-left rounded-lg transition-all" data-value="'Playfair Display', serif" style="font-family: 'Playfair Display'; font-size: 14px;">Imperial Display</button>
+                  <button class="dropdown-opt w-full px-4 py-3 hover:bg-gold/10 text-[11px] text-gold/60 text-left rounded-lg transition-all" data-value="'Lora', serif" style="font-family: 'Lora'; font-size: 14px;">Literary Scroll</button>
+                  <button class="dropdown-opt w-full px-4 py-3 hover:bg-gold/10 text-[11px] text-gold/60 text-left rounded-lg transition-all" data-value="'Inter', sans-serif" style="font-family: 'Inter'; font-size: 14px;">Modern Path</button>
+                  <button class="dropdown-opt w-full px-4 py-3 hover:bg-gold/10 text-[11px] text-gold/60 text-left rounded-lg transition-all" data-value="'JetBrains Mono', monospace" style="font-family: 'JetBrains Mono'; font-size: 14px;">Manual Mono</button>
+                </div>
+              </div>
+          </div>
+
+          <div class="flex items-center gap-6">
+              <div class="flex items-center gap-3">
+                  <span class="text-[8px] text-gold/40 uppercase font-sans tracking-widest">Aura</span>
+                  <div class="flex items-center gap-4">
+                      <button id="font-dec-alt" class="text-gold font-bold text-sm">-</button>
+                      <span id="font-size-val" class="text-[11px] text-gold/60 min-w-[15px] text-center font-mono">18</span>
+                      <button id="font-inc-alt" class="text-gold font-bold text-sm">+</button>
+                  </div>
+              </div>
+              <div class="flex items-center gap-3">
+                  <div class="relative custom-dropdown" id="ink-dropdown">
+                    <button class="dropdown-trigger flex items-center gap-2 px-3 py-1.5 bg-void/40 border border-gold/10 rounded-lg hover:border-gold/40 transition-all">
+                      <span class="dot w-2.5 h-2.5 rounded-full bg-[#e1e1e1]"></span>
+                      <span class="trigger-label text-[9px] text-gold/70 uppercase tracking-widest font-bold">Ink</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-gold/30 ml-1"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="dropdown-menu hidden absolute right-0 top-10 w-44 bg-void/98 border border-gold/20 p-1 rounded shadow-2xl z-50 animate-fade-in backdrop-blur-2xl">
+                      <button class="dropdown-opt w-full flex items-center gap-3 px-4 py-3 hover:bg-gold/10 text-[10px] text-gold/60 uppercase rounded-lg transition-all text-left" data-value="#e1e1e1"><span class="w-2.5 h-2.5 rounded-full bg-[#e1e1e1]"></span> Bone White</button>
+                      <button class="dropdown-opt w-full flex items-center gap-3 px-4 py-3 hover:bg-gold/10 text-[10px] text-gold/60 uppercase rounded-lg transition-all text-left" data-value="#c5a059"><span class="w-2.5 h-2.5 rounded-full bg-[#c5a059]"></span> Ancient Gold</button>
+                      <button class="dropdown-opt w-full flex items-center gap-3 px-4 py-3 hover:bg-gold/10 text-[10px] text-gold/60 uppercase rounded-lg transition-all text-left" data-value="#D1D1C7"><span class="w-2.5 h-2.5 rounded-full bg-[#D1D1C7]"></span> Stone Grey</button>
+                      <button class="dropdown-opt w-full flex items-center gap-3 px-4 py-3 hover:bg-gold/10 text-[10px] text-gold/60 uppercase rounded-lg transition-all text-left" data-value="#f4ecd8"><span class="w-2.5 h-2.5 rounded-full bg-[#f4ecd8]"></span> Parchment</button>
+                    </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- Header Section -->
+    <header class="flex flex-col items-center text-center mb-24 pt-10 w-full max-w-none">
+      <a href={l(`library/${novel.slug}`)} class="w-full text-[10px] text-gold/40 hover:text-gold uppercase tracking-[0.4em] transition-colors mb-12">« {novel.data.title}</a>
+      <h1 class="w-full text-3xl md:text-5xl lg:text-6xl font-serif text-gold uppercase leading-tight tracking-tight">{chapter.data.title || 'Chapter ' + (chapter.data.chapter_number || '')}</h1>
+      <div class="text-[10px] text-gold/30 uppercase tracking-[0.3em] mt-6 border-t border-gold/5 pt-6 inline-block w-full">{t('reader.volume')} {chapter.data.vol_number} <span class="mx-4 opacity-20">•</span> {t('reader.chapter')} {chapter.data.chapter_number}</div>
+    </header>
+
+    <!-- Reading Content -->
+    <article id="reading-content" class="prose prose-invert prose-gold max-w-none text-lg md:text-xl leading-relaxed font-serif mx-auto text-justify w-full">
+      <div id="content-payload"><Content /></div>
+    </article>
+
+    <!-- Support Section -->
+    <div class="mt-32 py-16 border-y border-gold/5 text-center flex flex-col items-center clear-both w-full">
+        <p class="text-[10px] tracking-[0.5em] text-gold/30 uppercase mb-8">{enjoyText}</p>
+        <div id="kofi-widget-container" class="relative z-10 min-h-[50px]">
+          <script is:inline type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+          <script is:inline type='text/javascript'>
+            if (window.kofiwidget2) {
+              kofiwidget2.init('A Celestial Coffee to Author', '#754d35', 'H2H61TN2PZ');
+              kofiwidget2.draw();
+            }
+          </script>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="chapter-navigation" class="mt-24 pt-16 border-t border-gold/10 flex justify-between items-center relative z-50 px-4 w-full">
+      {prevChapter ? (<a href={getCleanUrl(prevChapter)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">{t('reader.previous')}</a>) : (<span class="text-xs md:text-sm font-serif text-gold/10 uppercase tracking-[0.2em] cursor-not-allowed">{t('reader.previous')}</span>)}
+      <a href={l(`library/${novel.slug}`)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">{t('reader.index')}</a>
+      {nextChapter ? (<a href={getCleanUrl(nextChapter)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">{t('reader.next')}</a>) : (<span class="text-xs md:text-sm font-serif text-gold/10 uppercase tracking-[0.2em] cursor-not-allowed">{t('reader.next')}</span>)}
+    </nav>
+  </div>
+</div>
+
+<div id="reader-data" style="display:none;" data-novel-id={novel.data.id} data-novel-title={novel.data.title} data-vol-id={(chapter.data as any).vol_id} data-vol-number={(chapter.data as any).vol_number} data-chapter-title={chapter.data.title}></div>
+
+<style is:global>
+  #chapter-navigation { display: flex !important; visibility: visible !important; opacity: 1 !important; }
+  #reading-content p { margin-bottom: 2em; text-indent: 1.5em; }
+  #reading-content p:first-of-type { text-indent: 0; }
+  .reading-word.active-word { background: rgba(197, 160, 89, 0.2); color: #c5a059 !important; border-bottom: 1px solid #c5a059; border-radius: 2px; }
+  #reader-container.theme-parchment { background-color: #f4ecd8 !important; color: #2d261d !important; }
+  #reader-container.theme-parchment .prose { color: #2d261d !important; }
+  #reader-container.theme-imperial { background-color: #2a0505 !important; color: #e1d5c0 !important; }
+  #reader-container.theme-imperial .prose { color: #e1d5c0 !important; }
+  #reader-container.theme-void { background-color: #050505 !important; color: #D1D1C7 !important; }
+</style>
+
+<script is:inline>
+  function initReader() {
+    const container = document.getElementById('reader-container');
+    const content = document.getElementById('reading-content');
+    const dataEl = document.getElementById('reader-data');
+    if (!container || !content) return;
+
+    // --- 1. CUSTOM DROPDOWN ENGINE ---
+    function setupCustomDropdown(dropdownId, onChange) {
+        const dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        const opts = dropdown.querySelectorAll('.dropdown-opt');
+        const triggerDot = trigger.querySelector('.dot');
+        const triggerLabel = trigger.querySelector('.trigger-label');
+
+        trigger.onclick = (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); };
+        document.addEventListener('click', () => menu.classList.add('hidden'));
+        opts.forEach(opt => {
+            opt.onclick = () => {
+                const val = opt.dataset.value;
+                const dotColor = window.getComputedStyle(opt.querySelector('span') || opt).backgroundColor;
+                if (triggerDot) triggerDot.style.backgroundColor = dotColor;
+                if (triggerLabel) triggerLabel.innerText = opt.innerText.trim();
+                onChange(val);
+                menu.classList.add('hidden');
+            };
+        });
+        return { setValue: (val) => { const opt = Array.from(opts).find(o => o.dataset.value === val); if (opt) { if (triggerDot) triggerDot.style.backgroundColor = window.getComputedStyle(opt.querySelector('span') || opt).backgroundColor; if (triggerLabel) triggerLabel.innerText = opt.innerText.trim(); } } };
+    }
+
+    // --- 2. THEMES & TYPOGRAPHY ---
+    const themeDD = setupCustomDropdown('theme-dropdown', (v) => {
+        container.className = `min-h-screen transition-colors duration-500 pt-10 pb-32 theme-${v} w-full`;
+        localStorage.setItem('reader-theme', v);
+    });
+    const savedTheme = localStorage.getItem('reader-theme') || 'void';
+    themeDD.setValue(savedTheme);
+    container.className = `min-h-screen transition-colors duration-500 pt-10 pb-32 theme-${savedTheme} w-full`;
+
+    const familyDD = setupCustomDropdown('family-dropdown', (v) => {
+        content.style.fontFamily = v;
+        localStorage.setItem('reader-font-family', v);
+    });
+    const savedF = localStorage.getItem('reader-font-family') || 'inherit';
+    content.style.fontFamily = savedF;
+    familyDD.setValue(savedF);
+
+    const inkDD = setupCustomDropdown('ink-dropdown', (v) => {
+        content.style.color = v;
+        localStorage.setItem('reader-font-color', v);
+    });
+    const savedInk = localStorage.getItem('reader-font-color') || '#e1e1e1';
+    content.style.color = savedInk;
+    inkDD.setValue(savedInk);
+
+    // --- 3. BARS TOGGLE ---
+    const fBT = document.getElementById('font-bar-toggle');
+    const fC = document.getElementById('font-controls');
+    const vT = document.getElementById('voice-toggle');
+    const vC = document.getElementById('voice-controls');
+    if (fBT) fBT.onclick = () => { fC.classList.toggle('hidden'); fBT.classList.toggle('text-gold'); vC?.classList.add('hidden'); vT?.classList.remove('text-gold'); };
+    if (vT) vT.onclick = () => { vC?.classList.toggle('hidden'); vT.classList.toggle('text-gold'); fC?.classList.add('hidden'); fBT?.classList.remove('text-gold'); };
+
+    // --- 4. SIZE ---
+    let fontSize = parseInt(localStorage.getItem('reader-font-size')) || 18;
+    const sVD = document.getElementById('font-size-val');
+    const updateFS = (s) => {
+        fontSize = s; content.style.fontSize = s + 'px';
+        if (sVD) sVD.innerText = s;
+        localStorage.setItem('reader-font-size', s);
+    };
+    [document.getElementById('font-inc-main'), document.getElementById('font-inc-alt')].forEach(b => b && (b.onclick = () => updateFS(fontSize + 2)));
+    [document.getElementById('font-dec-main'), document.getElementById('font-dec-alt')].forEach(b => b && (b.onclick = () => fontSize > 12 && updateFS(fontSize - 2)));
+    updateFS(fontSize);
+
+    // --- 5. FULLSCREEN ---
+    const fsT = document.getElementById('fullscreen-toggle');
+    const gH = document.getElementById('global-header');
+    const rT = document.getElementById('reader-toolbar');
+    const eI = document.getElementById('expand-icon');
+    const sI = document.getElementById('shrink-icon');
+
+    const toggleUI = (show) => {
+      if (gH) gH.style.setProperty('display', show ? 'flex' : 'none', 'important');
+      if (rT) { rT.style.top = show ? '5rem' : '0px'; rT.style.borderRadius = show ? '0.75rem' : '0px'; }
+      if (eI) eI.classList.toggle('hidden', !show);
+      if (sI) sI.classList.toggle('hidden', show);
+    };
+
+    if (fsT) fsT.onclick = () => {
+      if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(e => console.warn(e)); toggleUI(false); }
+      else { document.exitFullscreen(); toggleUI(true); }
+    };
+    document.onfullscreenchange = () => { if (!document.fullscreenElement) toggleUI(true); };
+
+    // Voice logic has been purged as requested.
+
+    // --- 7. PROGRESS ---
+    if (dataEl) {
+      const pD = { novelId: dataEl.dataset.novelId, novelTitle: dataEl.dataset.novelTitle, volId: dataEl.dataset.volId, volNumber: dataEl.dataset.volNumber, chapterTitle: dataEl.dataset.chapterTitle, path: window.location.pathname, timestamp: Date.now() };
+      localStorage.setItem('last-read', JSON.stringify(pD));
+      const pM = JSON.parse(localStorage.getItem('reading-progress-map') || '{}');
+      pM[dataEl.dataset.novelId] = pD;
+      localStorage.setItem('reading-progress-map', JSON.stringify(pM));
+    }
+  }
+  initReader();
+  document.addEventListener('astro:page-load', initReader);
+</script>

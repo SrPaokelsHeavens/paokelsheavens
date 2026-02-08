@@ -1,0 +1,63 @@
+---
+interface Props {
+  direction?: 'left' | 'right';
+  speed?: string;
+  events: any[];
+}
+
+const { direction = 'left', speed = '40s', events } = Astro.props;
+
+// Duplicamos los eventos para asegurar un loop infinito perfecto
+const displayEvents = [...events, ...events, ...events];
+---
+
+<div class="relative overflow-hidden py-4 group">
+  <div 
+    class={`flex gap-6 whitespace-nowrap animate-scroll-${direction} hover:[animation-play-state:paused] transition-all`}
+    style={`animation-duration: ${speed};`}
+  >
+    {displayEvents.map((event, index) => (
+      <a 
+        href={event.url} 
+        class="inline-block w-80 bg-void border border-gold/10 p-4 hover:border-gold/40 transition-all hover:shadow-[0_0_15px_rgba(197,160,89,0.1)] group/card"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-[10px] tracking-widest text-gold/50 uppercase font-serif">
+            {event.type} • {event.platform}
+          </span>
+          <div class="w-2 h-2 rounded-full bg-gold/20 group-hover/card:bg-gold transition-colors"></div>
+        </div>
+        
+        <h3 class="text-sm font-serif text-[#D1D1C7] mb-2 whitespace-normal line-clamp-2">
+          {event.title}
+        </h3>
+        
+        <div class="flex items-center gap-2 text-[10px] text-gold/40 uppercase tracking-tighter">
+          <span>{event.metadata.date}</span>
+          <span>•</span>
+          <span class="text-gold/60">{event.metadata.author || 'Secta'}</span>
+        </div>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  @keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-33.33%); }
+  }
+  
+  @keyframes scroll-right {
+    0% { transform: translateX(-33.33%); }
+    100% { transform: translateX(0); }
+  }
+
+  .animate-scroll-left {
+    animation: scroll-left linear infinite;
+  }
+  
+  .animate-scroll-right {
+    animation: scroll-right linear infinite;
+  }
+</style>

@@ -1,0 +1,240 @@
+---
+import '../styles/global.css';
+import { languages, ui, defaultLang } from '../i18n/ui';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "Sr.Paokel's Sect Scriptorium. Chronicles of Immortals." } = Astro.props;
+
+// Detectar idioma desde la URL
+const url = Astro.url;
+const currentPath = url.pathname;
+const pathSegments = url.pathname.split('/').filter(Boolean);
+const lang = Object.keys(languages).includes(pathSegments[0]) ? pathSegments[0] : defaultLang;
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+
+// Función para generar rutas con el idioma correcto
+const l = (path: string) => {
+	const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+	return lang === defaultLang ? `/${cleanPath}` : `/${lang}/${cleanPath}`;
+};
+
+// Helper para detectar si un link está activo
+const isActive = (path: string) => {
+	const linkPath = l(path);
+	// Basic path matching
+	if (path === '/' || path === '') {
+		return currentPath === '/' || currentPath === `/${lang}/`;
+	}
+	return currentPath.includes(linkPath);
+};
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | PAOKELSHEAVENS</title>
+		
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+		<style is:global>
+			/* UI Fortification - Prevents external scripts from hiding core elements */
+			header {
+				display: flex !important;
+				opacity: 1 !important;
+				visibility: visible !important;
+			}
+			#sect-seal-btn {
+				display: flex !important;
+				opacity: 1 !important;
+				visibility: visible !important;
+			}
+			@media (min-width: 768px) {
+				#sect-seal-btn { display: none !important; }
+			}
+		</style>
+	</head>
+	<body class="min-h-screen flex flex-col bg-void text-[#D1D1C7]">
+		<header id="global-header" class="sticky top-0 z-[60] border-b border-gold/10 bg-void/80 backdrop-blur-md">
+			<nav class="container mx-auto px-4 h-16 flex items-center justify-between">
+				<a href={lang === defaultLang ? '/' : `/${lang}/`} class="text-xl font-serif font-bold text-gold tracking-tighter hover:scale-105 transition-transform">
+					PAOKELSHEAVENS
+				</a>
+				
+				<ul class="hidden md:flex gap-8 font-serif text-[10px] tracking-widest overflow-x-auto no-scrollbar py-2">
+					<li>
+						<a href={l('library')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('library') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+							{t['nav.library']}
+						</a>
+					</li>
+					<li>
+						<a href={l('news')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('news') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+							{t['nav.news']}
+						</a>
+					</li>
+					<li>
+						<a href={l('dao-table')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('dao-table') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+							{t['nav.dao']}
+						</a>
+					</li>
+					<li>
+						<a href={l('community')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('community') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
+							{t['nav.community']}
+						</a>
+					</li>
+				</ul>
+				
+				<div class="flex items-center gap-4">
+					<!-- Minimalist Language Dropdown -->
+					<div class="relative group h-full py-4">
+						<button class="flex items-center gap-1 text-[10px] font-serif text-gold/60 group-hover:text-gold transition-colors uppercase tracking-widest">
+							{lang} <span class="text-[8px] opacity-40 group-hover:rotate-180 transition-transform duration-300">▼</span>
+						</button>
+						<div class="absolute right-0 top-full mt-0 w-32 bg-void border border-gold/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 backdrop-blur-xl z-[70]">
+							{Object.entries(languages).map(([code, label]) => (
+								<a 
+									href={code === defaultLang ? '/' : `/${code}/`}
+									class={`block px-4 py-3 text-[9px] font-serif uppercase tracking-widest hover:bg-gold/10 transition-colors ${lang === code ? 'text-gold bg-gold/5' : 'text-gold/40'}`}
+								>
+									{label}
+								</a>
+							))}
+						</div>
+					</div>
+
+					<a href={l('donations')} class="inline-block bg-gold/10 border border-gold/30 px-4 py-2 rounded text-[9px] font-serif text-gold hover:bg-gold hover:text-void transition-all uppercase tracking-[0.2em]">
+						{t['nav.donate']}
+					</a>
+				</div>
+			</nav>
+		</header>
+
+		<!-- Mobile Navigation - The Sect Seal -->
+		<div id="mobile-menu-overlay" class="fixed inset-0 bg-void/95 z-[100] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 backdrop-blur-lg">
+			<button id="close-menu" class="absolute top-8 right-8 text-gold/40 hover:text-gold transition-colors text-2xl font-light">×</button>
+			<nav class="flex flex-col gap-10 text-center">
+				<a href={l('library')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4">{t['nav.library']}</a>
+				<a href={l('news')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 100ms;">{t['nav.news']}</a>
+				<a href={l('dao-table')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 200ms;">{t['nav.dao']}</a>
+				<a href={l('community')} class="mobile-link text-2xl font-serif text-gold tracking-[0.3em] uppercase opacity-0 translate-y-4" style="transition-delay: 300ms;">{t['nav.community']}</a>
+				<a href={l('donations')} class="mobile-link text-xs font-serif text-gold/40 tracking-[0.5em] uppercase border border-gold/20 px-8 py-3 opacity-0 translate-y-4" style="transition-delay: 400ms;">{t['nav.donate']}</a>
+			</nav>
+		</div>
+
+		<button id="sect-seal-btn" class="md:hidden fixed bottom-8 right-8 z-[110] w-14 h-14 bg-void border border-gold/40 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(197,160,89,0.2)] hover:shadow-[0_0_30px_rgba(197,160,89,0.4)] transition-all group overflow-hidden">
+			<div class="absolute inset-0 bg-gold/5 group-hover:bg-gold/10 transition-colors"></div>
+			<div class="relative flex flex-col gap-1.5 items-center">
+				<span class="w-5 h-px bg-gold transition-all duration-300"></span>
+				<span class="w-3 h-px bg-gold transition-all duration-300"></span>
+				<span class="w-5 h-px bg-gold transition-all duration-300"></span>
+			</div>
+		</button>
+
+		<script is:inline>
+			document.addEventListener('DOMContentLoaded', () => {
+				const sealBtn = document.getElementById('sect-seal-btn');
+				const overlay = document.getElementById('mobile-menu-overlay');
+				const closeBtn = document.getElementById('close-menu');
+				const mobileLinks = document.querySelectorAll('.mobile-link');
+
+				if (!sealBtn || !overlay || !closeBtn) return;
+
+				const toggleMenu = (show) => {
+					if (show) {
+						overlay.style.display = 'flex';
+						setTimeout(() => {
+							overlay.classList.remove('opacity-0', 'pointer-events-none');
+							sealBtn.style.opacity = '0';
+							sealBtn.style.pointerEvents = 'none';
+						}, 10);
+						mobileLinks.forEach((link, i) => {
+							setTimeout(() => {
+								link.classList.remove('opacity-0', 'translate-y-4');
+								link.classList.add('opacity-100', 'translate-y-0');
+							}, 100 + (i * 50));
+						});
+					} else {
+						overlay.classList.add('opacity-0', 'pointer-events-none');
+						sealBtn.style.opacity = '1';
+						sealBtn.style.pointerEvents = 'auto';
+						mobileLinks.forEach(link => {
+							link.classList.add('opacity-0', 'translate-y-4');
+							link.classList.remove('opacity-100', 'translate-y-0');
+						});
+						setTimeout(() => {
+							overlay.style.display = 'none';
+						}, 500);
+					}
+				}
+
+				sealBtn.addEventListener('click', () => toggleMenu(true));
+				closeBtn.addEventListener('click', () => toggleMenu(false));
+				
+				mobileLinks.forEach(link => {
+					link.addEventListener('click', () => toggleMenu(false));
+				});
+
+				// Smart Donation Mechanism
+				document.addEventListener('click', (e) => {
+					const target = e.target.closest('.smart-donate');
+					if (target && target.tagName === 'A') {
+						e.preventDefault();
+						const url = target.href;
+						const isAndroid = /Android/i.test(navigator.userAgent);
+						const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+						if (isAndroid) {
+							window.location.href = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;end`;
+						} else if (isIOS) {
+							window.open(url, '_blank');
+						} else {
+							window.location.href = url;
+						}
+					}
+				});
+			});
+		</script>
+
+		<main class="flex-grow">
+			<slot />
+		</main>
+
+		<footer class="border-t border-gold/10 bg-void-light py-12">
+			<div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+				<div>
+					<h3 class="text-gold font-serif mb-4 uppercase tracking-widest">PAOKELSHEAVENS</h3>
+					<p class="text-[11px] text-[#D1D1C7]/60 leading-relaxed italic">
+						{t['footer.description']}
+					</p>
+				</div>
+				<div>
+					<h4 class="text-gold font-serif mb-4 text-[9px] tracking-widest uppercase opacity-40">{t['footer.nav_title']}</h4>
+					<ul class="text-[10px] space-y-2 text-[#D1D1C7]/60">
+						<li><a href={l('library')} class="hover:text-gold transition-colors">{t['nav.library']}</a></li>
+						<li><a href={l('dao-table')} class="hover:text-gold transition-colors">{t['nav.dao']}</a></li>
+					</ul>
+				</div>
+				<div>
+					<h4 class="text-gold font-serif mb-4 text-[9px] tracking-widest uppercase opacity-40">{t['footer.presence_title']}</h4>
+					<div class="flex justify-center md:justify-start gap-4 text-[10px]">
+						<a href="#" class="text-[#D1D1C7]/40 hover:text-gold transition-colors">Discord</a>
+						<a href="#" class="text-[#D1D1C7]/40 hover:text-gold transition-colors">YouTube</a>
+					</div>
+				</div>
+			</div>
+			<div class="mt-12 text-center text-[9px] text-gold/20 uppercase tracking-[0.3em]">
+				© 2026 PAOKELSHEAVENS - Immortal Records
+			</div>
+		</footer>
+	</body>
+</html>
