@@ -69,6 +69,11 @@ export const ui = {
     'footer.description': 'Original cultivation chronicles and sect legends. Ascension is a lonely path, but here we share the annals.',
     'footer.nav_title': 'Navigation',
     'footer.presence_title': 'Presence',
+
+    'notifications.title': 'Enable Notifications',
+    'notifications.desc': 'Stay updated with new chapters and news. We are currently using local alerts. Once we reach our Ko-fi goal for server hosting, we will upgrade to a full push notification system that works even when your browser is closed.',
+    'notifications.enable': 'Enable Alerts',
+    'notifications.later': 'Maybe Later',
   },
   es: {
     'nav.library': 'BIBLIOTECA',
@@ -132,6 +137,11 @@ export const ui = {
     'footer.description': 'Crónicas de cultivo y leyendas de la secta. La ascensión es un camino solitario, pero aquí compartimos los anales.',
     'footer.nav_title': 'Navegación',
     'footer.presence_title': 'Presencia',
+
+    'notifications.title': 'Activar Notificaciones',
+    'notifications.desc': 'Mantente al día con los nuevos capítulos y noticias. Actualmente usamos alertas locales. Una vez alcancemos nuestra meta de Ko-fi para el alquiler de un servidor, pasaremos a un sistema de notificaciones push completo que funcionará incluso con el navegador cerrado.',
+    'notifications.enable': 'Activar Alertas',
+    'notifications.later': 'Más tarde',
   },
   zh: {
     'nav.library': '藏书阁',
@@ -195,5 +205,10 @@ export const ui = {
     'footer.description': '修仙志与宗门传说。升天之路虽孤独，但在此我们共赏编年史。',
     'footer.nav_title': '导航',
     'footer.presence_title': '社交',
+
+    'notifications.title': '开启通知',
+    'notifications.desc': '随时获取新章节和新闻动态。目前我们使用本地通知。一旦我们达到 Ko-fi 的服务器租赁目标，我们将升级到完整的推送通知系统，即使关闭浏览器也能正常工作。',
+    'notifications.enable': '开启提醒',
+    'notifications.later': '以后再说',
   },
 };

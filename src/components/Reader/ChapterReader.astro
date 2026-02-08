@@ -694,14 +694,33 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // --- Progress Mapping (Extended) ---
-    if (dataEl) {
-      const pD = { novelId: dataEl.dataset.novelId, novelTitle: dataEl.dataset.novelTitle, volId: dataEl.dataset.volId, volNumber: dataEl.dataset.volNumber, chapterTitle: dataEl.dataset.chapterTitle, path: window.location.pathname, timestamp: Date.now() };
-      localStorage.setItem('last-read', JSON.stringify(pD));
-      const pM = JSON.parse(localStorage.getItem('reading-progress-map') || '{}');
-      pM[dataEl.dataset.novelId] = pD;
-      localStorage.setItem('reading-progress-map', JSON.stringify(pM));
+    // --- 8. CLEANUP ENGINE ---
+    function cleanupReader() {
+        // Stop all speech synthesis immediately
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+
+        if (celestialVoice) {
+            celestialVoice.stop();
+        }
+        
+        // Only exit fullscreen if we are actually in it
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        }
+        
+        // Restore UI visibility
+        toggleUI(true);
     }
+
+    // Listen for every possible way to leave the page
+    window.addEventListener('beforeunload', cleanupReader);
+    window.addEventListener('pagehide', cleanupReader);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') cleanupReader();
+    });
+    document.addEventListener('astro:before-preparation', cleanupReader);
   }
   initReader();
   document.addEventListener('astro:page-load', initReader);

@@ -10,9 +10,6 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 
 <BaseLayout title={t['donations.title']} description={t['donations.desc']}>
   <div class="py-20">
-    <!-- PayPal SDK Loaded Here -->
-    <script is:inline src="https://www.paypal.com/sdk/js?client-id=BAAGyb0oeyqeIqm1YKRBJnSeEjNEkmCS_FGyALdI7Tanh3oVHz1_dD82SuXk-B1hk30HyM9VrIvu2UQkJE&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
-
     <div class="container mx-auto px-4 max-w-4xl">
       <!-- Header -->
       <div class="text-center mb-16">
@@ -63,11 +60,6 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
         <div class="bg-void-light p-10 border border-gold/10 flex flex-col items-center justify-center min-h-[400px]">
           <div class="w-full max-w-[300px]">
             <div id="paypal-container-FA9AKAMVV7APS"></div>
-            <script is:inline>
-              paypal.HostedButtons({
-                hostedButtonId: "FA9AKAMVV7APS",
-              }).render("#paypal-container-FA9AKAMVV7APS")
-            </script>
           </div>
           <p class="mt-8 text-[10px] text-gold/30 uppercase tracking-widest font-serif">Mortal Support • PayPal</p>
         </div>
@@ -92,4 +84,20 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
       </div>
     </div>
   </div>
+
+  <!-- PayPal SDK Loaded Here -->
+  <script is:inline src="https://www.paypal.com/sdk/js?client-id=BAAGyb0oeyqeIqm1YKRBJnSeEjNEkmCS_FGyALdI7Tanh3oVHz1_dD82SuXk-B1hk30HyM9VrIvu2UQkJE&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+  <script is:inline>
+    function initPayPal() {
+      if (window.paypal && window.paypal.HostedButtons) {
+        paypal.HostedButtons({
+          hostedButtonId: "FA9AKAMVV7APS",
+        }).render("#paypal-container-FA9AKAMVV7APS");
+      }
+    }
+    // Try to init after load
+    window.addEventListener('load', initPayPal);
+    // Fallback
+    setTimeout(initPayPal, 2000);
+  </script>
 </BaseLayout>

@@ -4,179 +4,130 @@ interface Props {
 }
 
 const { events } = Astro.props;
-
-// We clone the events for the infinite feel
-const displayEvents = [...events, ...events, ...events];
 ---
 
-<div class="celestial-carousel-wrapper relative w-full overflow-hidden py-10 px-4 group">
+<div class="celestial-carousel-system relative w-full pt-0 pb-10 group">
   
   <!-- Side Glows -->
-  <div class="absolute left-0 top-0 w-24 h-full bg-gradient-to-r from-gold/20 to-transparent z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-  <div class="absolute right-0 top-0 w-24 h-full bg-gradient-to-l from-gold/20 to-transparent z-20 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+  <div class="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-void via-void/40 to-transparent z-20 pointer-events-none"></div>
+  <div class="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-void via-void/40 to-transparent z-20 pointer-events-none"></div>
 
-  <!-- Carousel Track -->
-  <div 
-    id="celestial-track" 
-    class="flex gap-8 cursor-grab active:cursor-grabbing transition-transform duration-500 ease-out"
-    style="transform: translateX(0px);"
-  >
-    {displayEvents.map((event, index) => (
-      <div class="celestial-card flex-shrink-0 w-full md:w-[80vw] lg:w-[70vw] h-[400px] md:h-[500px] relative overflow-hidden border border-gold/10 group/card">
-        
-        <!-- Background Image with Overlay -->
-        <div class="absolute inset-0 z-0">
-            <img 
-                src={event.image || (event.type === 'chapter' ? 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1000' : 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1000')} 
-                alt={event.title}
-                class="w-full h-full object-cover transition-transform duration-[2000ms] group-hover/card:scale-110"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-void via-void/60 to-transparent"></div>
-        </div>
-
-        <!-- Content -->
-        <div class="absolute inset-0 z-10 p-8 flex flex-col justify-end">
-            <div class="mb-4 flex items-center gap-3">
-                <span class="px-3 py-1 bg-gold text-void text-[10px] font-bold uppercase tracking-widest">
-                    {event.type}
-                </span>
-                <span class="text-gold/60 text-[10px] uppercase tracking-[0.3em]">
-                    {event.metadata.date}
-                </span>
+  <!-- Embla Viewport -->
+  <div class="embla overflow-hidden" id="embla-viewport">
+    <div class="embla__container flex">
+      {events.map((event, index) => (
+        <div class="embla__slide flex-[0_0_100%] md:flex-[0_0_85%] lg:flex-[0_0_75%] min-w-0 px-4">
+          <div class="celestial-card relative h-[400px] md:h-[500px] overflow-hidden border border-gold/10 group/card transition-all duration-700">
+            
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img 
+                    src={event.image || (event.type === 'chapter' ? 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1000' : 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1000')} 
+                    alt={event.title}
+                    class="w-full h-full object-cover transition-transform duration-[2000ms] group-hover/card:scale-110"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-void via-void/60 to-transparent"></div>
             </div>
-            
-            <h3 class="text-3xl md:text-5xl font-serif text-white mb-4 leading-tight">
-                {event.title}
-            </h3>
-            
-            <p class="text-[#D1D1C7]/70 text-sm md:text-base max-w-2xl line-clamp-2 italic mb-8">
-                {event.excerpt || 'The annals of the heavens have been updated with new chronicles.'}
-            </p>
 
-            <a href={event.url} class="inline-block w-fit text-xs text-gold border border-gold/40 px-8 py-3 hover:bg-gold hover:text-void transition-all uppercase tracking-[0.2em] font-bold">
-                Examine Record →
-            </a>
+            <!-- Content -->
+            <div class="absolute inset-0 z-10 p-8 flex flex-col justify-end">
+                <div class="mb-4 flex items-center gap-3">
+                    <span class="px-3 py-1 bg-gold text-void text-[10px] font-bold uppercase tracking-widest">
+                        {event.type}
+                    </span>
+                    <span class="text-gold/60 text-[10px] uppercase tracking-[0.3em]">
+                        {event.metadata.date}
+                    </span>
+                </div>
+                
+                <h3 class="text-3xl md:text-5xl font-serif text-white mb-4 leading-tight">
+                    {event.title}
+                </h3>
+                
+                <p class="text-[#D1D1C7]/70 text-sm md:text-base max-w-2xl line-clamp-2 italic mb-8">
+                    {event.excerpt || 'The annals of the heavens have been updated with new chronicles.'}
+                </p>
+
+                <a href={event.url} class="inline-block w-fit text-xs text-gold border border-gold/40 px-8 py-3 hover:bg-gold hover:text-void transition-all uppercase tracking-[0.2em] font-bold">
+                    Examine Record →
+                </a>
+            </div>
+          </div>
         </div>
-      </div>
-    ))}
+      ))}
+    </div>
   </div>
 </div>
 
 <style>
-  .celestial-carousel-wrapper {
+  .embla__slide {
     perspective: 1000px;
   }
   
   .celestial-card {
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 0.4;
+    transform: scale(0.9) translateY(20px);
+    filter: grayscale(0.5) blur(2px);
   }
 
-  /* Center Highlight Effect */
-  .celestial-card.is-center {
+  /* Embla high-level state is handled via JS classes */
+  .celestial-card.is-selected {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: grayscale(0) blur(0);
     border-color: rgba(197, 160, 89, 0.6);
     box-shadow: 0 0 40px rgba(197, 160, 89, 0.15);
-    transform: scale(1.02);
   }
 </style>
 
-<script is:inline>
-  function initCarousel() {
-    const track = document.getElementById('celestial-track');
-    const cards = document.querySelectorAll('.celestial-card');
-    if (!track || cards.length === 0) return;
+<script>
+  import EmblaCarousel from 'embla-carousel'
+  import Autoplay from 'embla-carousel-autoplay'
 
-    let isDragging = false;
-    let startX;
-    let scrollLeft;
-    let currentTranslate = 0;
-    let prevTranslate = 0;
-    let animationID;
+  function setupCarousel() {
+    const viewportNode = document.getElementById('embla-viewport');
+    if (!viewportNode) return;
 
-    // Initialization: Center the carousel
-    const cardWidth = cards[0].offsetWidth + 32; // card + gap
-    const totalEvents = cards.length / 3;
-    const initialPosition = -(totalEvents * cardWidth);
-    currentTranslate = initialPosition;
-    setTransform(currentTranslate);
+    const options = { 
+        loop: true, 
+        align: 'center',
+        skipSnaps: false,
+        duration: 30
+    };
+    
+    const autoplayOptions = {
+        delay: 5000,
+        stopOnInteraction: false,
+        stopOnMouseEnter: true
+    };
+    
+    const emblaApi = EmblaCarousel(viewportNode as HTMLElement, options, [Autoplay(autoplayOptions)]);
 
-    function setTransform(value) {
-      track.style.transform = `translateX(${value}px)`;
-      updateCenterCard();
-    }
-
-    function updateCenterCard() {
-      const centerX = window.innerWidth / 2;
-      cards.forEach(card => {
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.left + rect.width / 2;
-        const distance = Math.abs(centerX - cardCenter);
+    const updateFocus = () => {
+        const slides = emblaApi.slideNodes();
+        const selectedIndex = emblaApi.selectedScrollSnap();
         
-        if (distance < rect.width / 2) {
-          card.classList.add('is-center');
-        } else {
-          card.classList.remove('is-center');
-        }
-      });
-    }
-
-    // Drag Logic
-    const startDrag = (e) => {
-      isDragging = true;
-      startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-      track.classList.remove('transition-transform');
-      cancelAnimationFrame(animationID);
+        // Embla handles loops by cycling indices, but slideNodes 
+        // provides the physical elements.
+        slides.forEach((slide, index) => {
+            const card = slide.querySelector('.celestial-card');
+            if (card) {
+                if (index === selectedIndex) {
+                    card.classList.add('is-selected');
+                } else {
+                    card.classList.remove('is-selected');
+                }
+            }
+        });
     };
 
-    const onDrag = (e) => {
-      if (!isDragging) return;
-      const x = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-      const walk = (x - startX) * 1.5;
-      currentTranslate = prevTranslate + walk;
-      setTransform(currentTranslate);
-    };
-
-    const endDrag = () => {
-      isDragging = false;
-      track.classList.add('transition-transform');
-      
-      // Infinite Wrap Logic
-      const threshold = totalEvents * cardWidth;
-      if (Math.abs(currentTranslate) < threshold / 2) {
-        currentTranslate -= threshold;
-      } else if (Math.abs(currentTranslate) > threshold * 2.5) {
-        currentTranslate += threshold;
-      }
-
-      // Snap to Center Logic
-      const snapX = Math.round(currentTranslate / cardWidth) * cardWidth;
-      // Offset to center the card on screen
-      const offset = (window.innerWidth - cards[0].offsetWidth) / 2 - 16;
-      currentTranslate = snapX + (offset % cardWidth);
-      
-      setTransform(currentTranslate);
-      prevTranslate = currentTranslate;
-    };
-
-    track.addEventListener('mousedown', startDrag);
-    track.addEventListener('mousemove', onDrag);
-    track.addEventListener('mouseup', endDrag);
-    track.addEventListener('mouseleave', endDrag);
-
-    track.addEventListener('touchstart', startDrag);
-    track.addEventListener('touchmove', onDrag);
-    track.addEventListener('touchend', endDrag);
-
-    // Window Resize Adjust
-    window.addEventListener('resize', () => {
-      const offset = (window.innerWidth - cards[0].offsetWidth) / 2 - 16;
-      currentTranslate = Math.round(currentTranslate / cardWidth) * cardWidth + (offset % cardWidth);
-      setTransform(currentTranslate);
-    });
-
-    updateCenterCard();
+    emblaApi.on('select', updateFocus);
+    emblaApi.on('init', updateFocus);
+    emblaApi.on('reInit', updateFocus);
   }
 
-  initCarousel();
-  document.addEventListener('astro:page-load', initCarousel);
+  // Support for Astro View Transitions
+  setupCarousel();
+  document.addEventListener('astro:page-load', setupCarousel);
 </script>

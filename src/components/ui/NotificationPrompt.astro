@@ -1,0 +1,98 @@
+---
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div id="notification-prompt" class="fixed bottom-6 left-6 z-[200] max-w-sm bg-void/95 border border-gold/20 p-6 shadow-2xl backdrop-blur-xl translate-y-[150%] transition-transform duration-700 hidden">
+    <div class="flex items-start gap-4">
+        <div class="w-10 h-10 flex-shrink-0 bg-gold/10 border border-gold/20 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gold"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </div>
+        <div class="flex-1">
+            <h3 class="text-xs font-serif text-gold uppercase tracking-widest mb-2">{t('notifications.title')}</h3>
+            <p class="text-[10px] text-[#D1D1C7]/60 leading-relaxed mb-6 font-sans">
+                {t('notifications.desc')}
+            </p>
+            <div class="flex gap-3">
+                <button id="notify-enable" class="flex-1 bg-gold text-void text-[9px] font-bold uppercase tracking-widest py-2 px-4 hover:bg-[#D4AF37] transition-all">
+                    {t('notifications.enable')}
+                </button>
+                <button id="notify-close" class="text-[9px] text-gold/40 uppercase tracking-widest hover:text-gold transition-all px-2">
+                    {t('notifications.later')}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script is:inline>
+    function initNotifications() {
+        const prompt = document.getElementById('notification-prompt');
+        const enableBtn = document.getElementById('notify-enable');
+        const closeBtn = document.getElementById('notify-close');
+        
+        if (!prompt || !enableBtn || !closeBtn) return;
+
+        // 1. Check if user already made a choice or if Notifications are not supported
+        const choice = localStorage.getItem('pkh-notification-choice');
+        if (!('Notification' in window) || choice === 'granted' || choice === 'denied') {
+            checkNewContent(); // Check for new content if already granted
+            return;
+        }
+
+        // 2. Show prompt after a delay
+        setTimeout(() => {
+            prompt.classList.remove('hidden');
+            setTimeout(() => prompt.style.transform = 'translateY(0)', 100);
+        }, 5000);
+
+        // 3. Handle Permission Request
+        enableBtn.onclick = async () => {
+            const permission = await Notification.requestPermission();
+            localStorage.setItem('pkh-notification-choice', permission);
+            hidePrompt();
+            if (permission === 'granted') {
+                new Notification("Sect Connection Established", {
+                    body: "You will now receive alerts for new chapters and news.",
+                    icon: "/favicon.svg"
+                });
+            }
+        };
+
+        closeBtn.onclick = () => {
+            localStorage.setItem('pkh-notification-choice', 'later');
+            hidePrompt();
+        };
+
+        function hidePrompt() {
+            prompt.style.transform = 'translateY(150%)';
+            setTimeout(() => prompt.classList.add('hidden'), 700);
+        }
+
+        // 4. Check for New Content (Local Logic)
+        function checkNewContent() {
+            if (Notification.permission !== 'granted') return;
+
+            // In a real scenario, we would fetch a manifest or check a date.
+            // Since this is static, we compare the last-checked date in localStorage
+            // with the current date if there are "new" items rendered on the current page.
+            
+            const lastCheck = localStorage.getItem('pkh-last-content-check') || 0;
+            const now = Date.now();
+            
+            // If more than 1 hour has passed since last check
+            if (now - lastCheck > 3600000) {
+                // Here we could look for elements with specific data-attributes or classes
+                // that indicate "Recent" or "New" and trigger a notification.
+                // For now, we update the timestamp.
+                localStorage.setItem('pkh-last-content-check', now);
+            }
+        }
+    }
+
+    // Support for Astro Transitions
+    initNotifications();
+    document.addEventListener('astro:page-load', initNotifications);
+</script>

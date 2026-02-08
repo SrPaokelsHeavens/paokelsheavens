@@ -10,47 +10,73 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const l = useLocalizedPath(lang);
 
-// --- NEW DATA FETCHING (Unified Library + News) ---
-const allChapters = await getCollection('library', (entry) => entry.data.type === 'chapter');
-const allNews = await getCollection('news');
+// --- CELESTIAL ORCHESTRATOR (The Mirror) ---
+const controlEntries = await getCollection('settings');
+const control = controlEntries.length > 0 ? controlEntries[0].data : {
+    chapterDaysOnDisplay: 0,
+    newsDaysOnDisplay: 15,
+    maxTotalCards: 15,
+    featuredFirst: true,
+    displayType: 'all'
+};
 
-const chapterEvents = allChapters.map(ch => {
-  const data = ch.data as any;
-  return {
-    id: ch.id,
-    type: 'chapter',
-    platform: 'web',
-    title: `${data.novel_title}: ${data.title}`,
-    excerpt: `A new chapter has been transcribed: ${data.title} (Vol. ${data.vol_number}, Ch. ${data.chapter_number})`,
-    url: l(`library/${ch.slug}`),
-    image: (data.novel_id === 'ultimate-martial-will') 
-           ? 'https://i.ibb.co/wNPbn6R6/Ultimate-martial-will-cover.png' 
-           : 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1000',
-    metadata: { 
-      date: data.publishDate || 'Recent', 
-      author: data.author || 'Sr. Paokel' 
-    },
-    timestamp: new Date(data.publishDate || Date.now()).getTime()
-  };
+const rawCarousel = await getCollection('carousel');
+
+// Debug: Check if we have cards
+// console.log('Raw Cards:', rawCarousel.length);
+
+// 1. Filtering by Type and Blacklist
+let filtered = rawCarousel.filter(card => {
+    if (control.displayType && control.displayType !== 'all' && card.data.type !== control.displayType) return false;
+    
+    // Date Filtering (Days on Display)
+    const now = new Date();
+    const pubDate = new Date(card.data.publishDate);
+    const diffTime = Math.abs(now.getTime() - pubDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (card.data.type === 'chapter' && control.chapterDaysOnDisplay > 0 && diffDays > control.chapterDaysOnDisplay) return false;
+    if (card.data.type === 'news' && control.newsDaysOnDisplay > 0 && diffDays > control.newsDaysOnDisplay) return false;
+
+    return true;
 });
 
-const newsEvents = allNews.map(n => ({
-  id: n.id,
-  type: 'news',
-  platform: 'web',
-  title: n.data.title,
-  excerpt: n.data.excerpt,
-  image: (n.data as any).image,
-  url: l('news'),
-  metadata: { 
-    date: n.data.publishDate, 
-    author: (n.data as any).author 
-  },
-  timestamp: new Date(n.data.publishDate).getTime()
-}));
+// 2. Sorting Logic (Sovereign Order)
+const allEvents = filtered.sort((a, b) => {
+    // A. Priority List (Pinning)
+    const pA = control.priorityList?.indexOf(a.data.sourceId);
+    const pB = control.priorityList?.indexOf(b.data.sourceId);
+    if (pA !== -1 && pB !== -1) return pA - pB;
+    if (pA !== -1) return -1;
+    if (pB !== -1) return 1;
 
-// Combine and sort events
-const allEvents = [...chapterEvents, ...newsEvents].sort((a, b) => b.timestamp - a.timestamp);
+    // B. Featured First
+    if (control.featuredFirst) {
+        if (a.data.featured && !b.data.featured) return -1;
+        if (!a.data.featured && b.data.featured) return 1;
+    }
+
+    // C. Type Priority
+    if (control.typePriority) {
+        const tA = control.typePriority.indexOf(a.data.type);
+        const tB = control.typePriority.indexOf(b.data.type);
+        if (tA !== tB) return tA - tB;
+    }
+
+    // D. Date (Newest first)
+    return new Date(b.data.publishDate).getTime() - new Date(a.data.publishDate).getTime();
+}).slice(0, control.maxTotalCards || 15).map(card => ({
+    id: card.id,
+    type: card.data.type,
+    title: card.data.title,
+    excerpt: card.data.excerpt,
+    url: card.data.url,
+    image: card.data.image,
+    metadata: { 
+      date: card.data.publishDate,
+      author: 'Sect Record' 
+    }
+}));
 ---
 
 <BaseLayout title="Home">
@@ -66,16 +92,38 @@ const allEvents = [...chapterEvents, ...newsEvents].sort((a, b) => b.timestamp -
 				Immortal Path • {lang.toUpperCase()}
 			</div>
 			
-			<h1 class="text-6xl md:text-8xl lg:text-9xl font-serif font-bold mb-10 tracking-tighter leading-[0.8] transition-all">
+			<h1 class="hero-title font-serif font-bold mb-10 tracking-tighter leading-[0.8] transition-all">
 				<span class="text-gold block">PAOKELS</span>
-				<span class="text-[#D1D1C7] opacity-80 italic text-4xl md:text-6xl lg:text-7xl">HEAVENS</span>
+				<span class="hero-subtitle text-[#D1D1C7] opacity-80 italic">HEAVENS</span>
 			</h1>
+
+<style>
+	.hero-title {
+		font-size: clamp(2.8rem, 18vw, 3.75rem);
+	}
+	.hero-subtitle {
+		font-size: clamp(1.8rem, 12vw, 2.25rem);
+	}
+
+	@media (min-width: 768px) {
+		.hero-title { font-size: 6rem; }
+		.hero-subtitle { font-size: 3.75rem; }
+	}
+
+	@media (min-width: 1024px) {
+		.hero-title { font-size: 8rem; }
+		.hero-subtitle { font-size: 4.5rem; }
+	}
+</style>
 			
-			<div class="max-w-3xl mx-auto mb-16">
-				<p class="text-base md:text-lg text-[#D1D1C7]/70 font-light leading-relaxed italic font-serif">
-					"{t('hero.speech')}"
-				</p>
+			<div class="w-full mb-4 text-center">
+				<h2 class="chronicles-title font-serif tracking-[0.4em] mr-[-0.4em] uppercase text-gold leading-none block mx-auto">
+					{t('chronicles.title')}
+				</h2>
+				<div class="w-20 h-px bg-gold/20 mx-auto mt-3"></div>
 			</div>
+			
+			<CelestialCarousel events={allEvents} />
 			
 			<div class="flex flex-col md:flex-row gap-6 justify-center items-center">
 				<a href={l('library')} class="w-full md:w-auto bg-gold text-void px-12 py-5 font-serif font-bold tracking-[0.2em] text-[11px] hover:bg-[#D4AF37] hover:shadow-[0_0_30px_rgba(197,160,89,0.3)] transition-all transform hover:-translate-y-1">
@@ -96,14 +144,33 @@ const allEvents = [...chapterEvents, ...newsEvents].sort((a, b) => b.timestamp -
 			Wisdom • Fate • Honor
 		</div>
 	</section>
-
-	<!-- Sección Chronicles -->
-	<section class="py-24 bg-void-light/40 border-y border-gold/5 overflow-hidden">
-		<div class="container mx-auto px-4 mb-12">
-			<h2 class="text-3xl font-serif text-center tracking-[0.3em] uppercase text-gold">{t('chronicles.title')}</h2>
-			<div class="w-32 h-px bg-gold/20 mx-auto mt-6"></div>
-		</div>
-		
-		<CelestialCarousel events={allEvents} />
-	</section>
 </BaseLayout>
+
+<style>
+	.hero-title {
+		font-size: clamp(2.8rem, 18vw, 3.75rem);
+	}
+	.hero-subtitle {
+		font-size: clamp(1.8rem, 12vw, 2.25rem);
+	}
+
+	.chronicles-title {
+		font-size: 1.1rem;
+	}
+
+	@media (max-width: 516px) {
+		.chronicles-title {
+			font-size: 3.5vw;
+		}
+	}
+
+	@media (min-width: 768px) {
+		.hero-title { font-size: 6rem; }
+		.hero-subtitle { font-size: 3.75rem; }
+	}
+
+	@media (min-width: 1024px) {
+		.hero-title { font-size: 8rem; }
+		.hero-subtitle { font-size: 4.5rem; }
+	}
+</style>

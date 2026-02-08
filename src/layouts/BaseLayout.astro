@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { languages, ui, defaultLang } from '../i18n/ui';
+import NotificationPrompt from '../components/ui/NotificationPrompt.astro';
 
 interface Props {
 	title: string;
@@ -38,7 +39,7 @@ const isActive = (path: string) => {
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title} | PAOKELSHEAVENS</title>
@@ -46,33 +47,57 @@ const isActive = (path: string) => {
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-
 		<style is:global>
-			/* UI Fortification - Prevents external scripts from hiding core elements */
-			header {
+			/* Force Header Visibility - Ultimate Fortification */
+			#global-header {
 				display: flex !important;
-				opacity: 1 !important;
 				visibility: visible !important;
-			}
-			#sect-seal-btn {
-				display: flex !important;
 				opacity: 1 !important;
-				visibility: visible !important;
+				transform: none !important;
 			}
+			
+			/* Force Desktop Elements on Large Screens */
 			@media (min-width: 768px) {
-				#sect-seal-btn { display: none !important; }
+				#global-header ul {
+					display: flex !important;
+				}
+				#global-header .sm-inline-logo {
+					display: inline !important;
+				}
+				#global-header .sm-hidden-logo {
+					display: none !important;
+				}
+				#sect-seal-btn {
+					display: none !important;
+				}
+			}
+
+			/* Mobile Styles */
+			@media (max-width: 767px) {
+				#global-header ul {
+					display: none !important;
+				}
+				#global-header .sm-inline-logo {
+					display: none !important;
+				}
+				#global-header .sm-hidden-logo {
+					display: inline !important;
+				}
+				#sect-seal-btn {
+					display: flex !important;
+				}
 			}
 		</style>
 	</head>
 	<body class="min-h-screen flex flex-col bg-void text-[#D1D1C7]">
-		<header id="global-header" class="sticky top-0 z-[60] border-b border-gold/10 bg-void/80 backdrop-blur-md">
+		<header id="global-header" class="fixed top-0 left-0 w-full z-[100] border-b border-gold/10 bg-void/80 backdrop-blur-md">
 			<nav class="container mx-auto px-4 h-16 flex items-center justify-between">
 				<a href={lang === defaultLang ? '/' : `/${lang}/`} class="text-xl font-serif font-bold text-gold tracking-tighter hover:scale-105 transition-transform">
-					<span class="hidden sm:inline">PAOKELSHEAVENS</span>
-					<span class="inline sm:hidden">PKH</span>
+					<span class="sm-inline-logo hidden sm:inline">PAOKELSHEAVENS</span>
+					<span class="sm-hidden-logo inline sm:hidden">PKH</span>
 				</a>
 				
-				<ul class="hidden md:flex gap-8 font-serif text-[10px] tracking-widest overflow-x-auto no-scrollbar py-2">
+				<ul class="nav-links-desktop hidden md:flex gap-8 font-serif text-[10px] tracking-widest overflow-x-auto no-scrollbar py-2">
 					<li>
 						<a href={l('library')} class={`transition-all duration-300 whitespace-nowrap pb-1 ${isActive('library') ? 'text-gold border-b border-gold shadow-[0_5px_15px_-2px_rgba(197,160,89,0.3)]' : 'text-[#D1D1C7]/40 hover:text-gold'}`}>
 							{t['nav.library']}
@@ -142,6 +167,51 @@ const isActive = (path: string) => {
 		</button>
 
 		<script is:inline>
+			// Global Silence Seal - Ensures no audio or immersive state leaks between pages
+			(function() {
+				const silence = () => {
+					if ('speechSynthesis' in window) {
+						window.speechSynthesis.cancel();
+					}
+				};
+
+				// Kill any leftover speech on load
+				silence();
+				
+				// Handle Astro transitions
+				document.addEventListener('astro:after-swap', silence);
+				document.addEventListener('astro:before-preparation', silence);
+			})();
+
+			// Header Sentinel - Protects the navigation from being deleted or hidden
+			(function() {
+				const protect = () => {
+					const header = document.getElementById('global-header');
+					if (header) {
+						header.style.setProperty('display', 'flex', 'important');
+						header.style.setProperty('visibility', 'visible', 'important');
+						header.style.setProperty('opacity', '1', 'important');
+					}
+				};
+				
+				// Run immediately and on intervals to fight aggressive scripts
+				protect();
+				setInterval(protect, 1000);
+				
+				// Prevent deletion
+				const observer = new MutationObserver((mutations) => {
+					mutations.forEach((mutation) => {
+						mutation.removedNodes.forEach((node) => {
+							if (node.id === 'global-header') {
+								console.warn('Sect Warning: An external force tried to delete the Heavenly Header. Restoring...');
+								document.body.prepend(node);
+							}
+						});
+					});
+				});
+				observer.observe(document.body, { childList: true });
+			})();
+
 			document.addEventListener('DOMContentLoaded', () => {
 				const sealBtn = document.getElementById('sect-seal-btn');
 				const overlay = document.getElementById('mobile-menu-overlay');
@@ -206,7 +276,7 @@ const isActive = (path: string) => {
 			});
 		</script>
 
-		<main class="flex-grow">
+		<main class="flex-grow pt-16">
 			<slot />
 		</main>
 
@@ -237,5 +307,7 @@ const isActive = (path: string) => {
 				© 2026 PAOKELSHEAVENS - Immortal Records
 			</div>
 		</footer>
+
+		<NotificationPrompt />
 	</body>
 </html>
