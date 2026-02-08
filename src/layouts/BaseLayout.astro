@@ -68,7 +68,8 @@ const isActive = (path: string) => {
 		<header id="global-header" class="sticky top-0 z-[60] border-b border-gold/10 bg-void/80 backdrop-blur-md">
 			<nav class="container mx-auto px-4 h-16 flex items-center justify-between">
 				<a href={lang === defaultLang ? '/' : `/${lang}/`} class="text-xl font-serif font-bold text-gold tracking-tighter hover:scale-105 transition-transform">
-					PAOKELSHEAVENS
+					<span class="hidden sm:inline">PAOKELSHEAVENS</span>
+					<span class="inline sm:hidden">PKH</span>
 				</a>
 				
 				<ul class="hidden md:flex gap-8 font-serif text-[10px] tracking-widest overflow-x-auto no-scrollbar py-2">
