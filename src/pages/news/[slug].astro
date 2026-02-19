@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { defaultLang, ui, languages } from '../../i18n/ui';
 
 export async function getStaticPaths() {
   const newsEntries = await getCollection('news');
@@ -14,10 +13,6 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 
-const url = Astro.url;
-const pathSegments = url.pathname.split('/').filter(Boolean);
-const lang = Object.keys(languages).includes(pathSegments[0]) ? pathSegments[0] : defaultLang;
-const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 ---
 
 <BaseLayout title={entry.data.title}>
@@ -65,11 +60,11 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
       <div class="mt-32 pt-16 border-t border-gold/10">
         <div class="bg-void-light border border-gold/5 p-12 text-center relative overflow-hidden group">
             <div class="absolute inset-0 bg-gold/[0.01] group-hover:bg-gold/[0.03] transition-colors"></div>
-            <h3 class="text-gold font-serif text-xl mb-4 uppercase tracking-widest relative z-10">Join the Conversation</h3>
-            <p class="text-sm text-[#D1D1C7]/40 mb-8 italic relative z-10">"Disciples who share wisdom grow faster than those who hoard it."</p>
+            <h3 class="text-gold font-serif text-xl mb-4 uppercase tracking-widest relative z-10">Stay Connected</h3>
+            <p class="text-sm text-[#D1D1C7]/40 mb-8 italic relative z-10">All communications are written and archived. Choose a route below to continue the discussion.</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-                <a href="/community" class="bg-gold text-void px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-[#D4AF37] transition-all uppercase">Enter Discord Pavilion</a>
-                <a href="/donations" class="border border-gold/30 text-gold px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-gold/10 transition-all uppercase">Support the Sect</a>
+                <a href="/community" class="bg-gold text-void px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-[#D4AF37] transition-all uppercase">Open Community Hub</a>
+                <a href="mailto:admin@srpaokelsheavens.eu.org" class="border border-gold/30 text-gold px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-gold/10 transition-all uppercase">Email the Archivist</a>
             </div>
         </div>
       </div>

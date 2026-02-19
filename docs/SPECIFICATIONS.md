@@ -1,33 +1,34 @@
-# Especificaciones Técnicas y de Diseño
+# Technical & Design Specifications
 
-## 1. Stack Tecnológico
-- **Framework:** Astro (Recomendado por su manejo de MDX para la biblioteca y velocidad).
-- **Estilos:** Tailwind CSS (Para un diseño minimalista y responsivo).
+## 1. Stack
+- **Framework:** Astro 5.x (static output).
+- **Styling:** Tailwind CSS with custom colors (oid, gold, lood).
 - **Hosting:** GitHub Pages.
-- **Dominio:** `srpaokelsheavens.eu.org`.
+- **Languages:** English only.
 
-## 2. Paleta de Colores (Dark Fantasy)
-- **Fondo Primario:** `#0a0a0b` (Negro abisal/Tinta).
-- **Fondo Secundario:** `#161618` (Gris oscuro/Piedra).
-- **Texto Primario:** `#e1e1e1` (Blanco hueso para lectura).
-- **Acento Gold:** `#c5a059` (Oro antiguo/Energía espiritual).
-- **Acento Red:** `#8b0000` (Rojo sangre/Oscuridad).
+## 2. Palette
+- Void (#050505)
+- Void Light (#0a0a0b)
+- Bone (#D1D1C7)
+- Gold (#C5A059)
+- Blood (#7F1D1D)
 
-## 3. Tipografía
-- **Títulos:** 'Playfair Display' o similar (Serif elegante, estilo Wuxia).
-- **Cuerpo:** 'Inter' o 'Roboto' (Sans-serif para legibilidad moderna).
+## 3. Typography
+- Serif: Cinzel / Playfair (headers, lore).
+- Sans: Inter / Roboto (body, UI labels).
 
-## 4. Componentes Clave
-- **Hero Section:** Un mensaje poderoso que introduzca al usuario al "Camino".
-- **Chronicles of the Heavens (Event Stream):** Un carrusel infinito bidireccional que muestra:
-  - Nuevos capítulos publicados.
-  - Posts de redes sociales (TikTok, Facebook, etc.).
-  - Noticias del sitio y actualizaciones de la Dao Table.
-- **News Feed:** Lista vertical minimalista de actualizaciones.
-- **Library Grid:** Tarjetas con portadas y metadatos de las obras.
-- **Social Float:** Barra lateral o pie de página con acceso rápido a redes.
+## 4. Core Components
+- **Hero + Celestial Carousel:** Driven by llEvents computed in src/pages/index.astro.
+- **Library Grid & Reader:** Uses Astro content collections + ChapterReader component.
+- **News Modal:** Inline template duplication with JavaScript modal.
+- **Notifications / Reading Progress:** Lightweight client scripts persisted in LocalStorage.
 
-## 5. Requerimientos de Contenido
-- **Speech Inicial:** Debe ser poético, oscuro y motivador.
-- **Biblioteca:** Capacidad de organizar por géneros o tipos de cultivo (categorías).
-- **Comunidad:** Enlaces directos a Discord, YouTube, etc.
+## 5. Content Requirements
+- Every Markdown file must include the schema-required fields; build fails otherwise.
+- Images should be remote and reliable; if not, host under public/.
+- No translation toggles or bilingual copy.
+
+## 6. Performance Targets
+- Keep hero/carousel payload scoped to max 15 cards via settings/control.md.
+- Prefer CSS animations over JavaScript when possible.
+- Large scripts (reader, carousel) already lazy-initialize; maintain that approach for future widgets.

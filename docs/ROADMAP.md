@@ -1,26 +1,29 @@
-# Roadmap - El Camino hacia la Inmortalidad Digital
+# Roadmap � Path to the Immortal Release
 
-Este documento detalla las fases de desarrollo de la web.
+## Phase 1: Baseline (Complete)
+- Astro scaffold, Tailwind, initial components.
+- Carousel forge + reader experience.
 
-## Fase 1: Cimientos de la Secta (Preparación)
-- [x] Estructura de carpetas inicial.
-- [x] Documentos de gestión de proyecto.
-- [ ] Configuración de entorno de desarrollo (Vite + Tailwind).
-- [ ] Diseño de mockups básicos (Layout).
+## Phase 2: English-Only Reset (Complete)
+- Removed legacy i18n assets and multilingual news.
+- Translated documentation/governance to English.
+- Enforced English enums in schemas + data.
 
-## Fase 2: Formación del Núcleo (Desarrollo Base)
-- [ ] Implementación de la Página de Inicio (Speech & Hero Section).
-- [ ] Sistema de Noticias (Feed estático basado en archivos).
-- [ ] Estructura de la Biblioteca (Filtrado y visualización).
+## Phase 3: Discord Decontamination (Complete)
+- ? Community page now routes to official dispatches and archived contact info only.
+- ? News CTAs + footer reference the new hub instead of Discord.
+- ? Automation notes updated to reflect the no-chat policy.
 
-## Fase 3: Expansión de Influencia (Funcionalidades)
-- [ ] Widgets de Redes Sociales (Discord, Twitter, etc.).
-- [ ] Página de Donaciones e integración de pasarelas.
-- [ ] **Dao Table:** Sistema de visualización de agradecimientos por rangos.
-- [ ] Sección de Comunidad y contacto.
+## Phase 4: Dao Table via Markdown (In Progress)
+- ? Introduced src/content/dao collection with tiered supporters.
+- ? Render Dao Table from Markdown + feed carousel with donor highlights.
+- ? Continue enriching entries / add additional supporters as they join.
 
-## Fase 4: Ascensión (Despliegue y Pulido)
-- [ ] Optimización SEO y Performance.
-- [ ] Configuración de GitHub Actions para despliegue automático.
-- [ ] Pruebas en dispositivos móviles.
-- [ ] Lanzamiento oficial en `srpaokelsheavens.eu.org`.
+## Phase 5: Broken-Link Amnesty (Planned)
+- Audit every CTA/URL and disable or reroute placeholders.
+- Adjust obots.txt until a valid sitemap exists again.
+
+## Phase 6: Governance + CI Revival (Planned)
+- Refresh docs after structural changes.
+- Restore 
+pm run build in CI/GitHub Pages once blockers are resolved.

@@ -2,61 +2,32 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import LibraryCard from '../../components/Library/LibraryCard.astro';
-import { getLangFromUrl, useTranslations } from '../../i18n/utils';
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
-
-// UMA Engine: Get all novels from the new unified library collection
 const allNovels = await getCollection('library', (entry) => entry.data.type === 'novel');
 ---
 
-<BaseLayout title={t('library.title')}>
-
+<BaseLayout title="Imperial Library">
   <div class="py-20">
-
     <div class="container mx-auto px-4">
-
       <div class="max-w-3xl mx-auto text-center mb-16">
-
-        <h1 class="text-4xl md:text-5xl font-serif mb-6 tracking-widest uppercase text-gold">{t('library.title')}</h1>
-
+        <h1 class="text-4xl md:text-5xl font-serif mb-6 tracking-widest uppercase text-gold">Imperial Library</h1>
         <div class="w-24 h-px bg-gold/30 mx-auto mb-8"></div>
-
         <p class="text-[#D1D1C7]/60 italic font-serif">
-
-          {t('library.desc')}
-
+          "Knowledge is the first step toward transcendence. Here lie the chronicles of those who defied the heavens."
         </p>
-
       </div>
-
-
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-
         {allNovels.map(novel => (
-
           <LibraryCard novel={novel} />
-
         ))}
-
       </div>
 
-
-
       {allNovels.length === 0 && (
-
         <div class="text-center py-20 border border-dashed border-gold/10">
-
-          <p class="text-gold/30 font-serif italic">{t('library.empty')}</p>
-
+          <p class="text-gold/30 font-serif italic">The archives are empty for now...</p>
         </div>
-
       )}
-
     </div>
-
   </div>
-
 </BaseLayout>

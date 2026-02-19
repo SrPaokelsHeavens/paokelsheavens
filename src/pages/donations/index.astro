@@ -1,56 +1,50 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { defaultLang, ui, languages } from '../../i18n/ui';
-
-const url = Astro.url;
-const pathSegments = url.pathname.split('/').filter(Boolean);
-const lang = Object.keys(languages).includes(pathSegments[0]) ? pathSegments[0] : defaultLang;
-const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 ---
 
-<BaseLayout title={t['donations.title']} description={t['donations.desc']}>
+<BaseLayout title="Support the Sect" description="Your contribution keeps the chronicles flowing.">
   <div class="py-20">
     <div class="container mx-auto px-4 max-w-4xl">
       <!-- Header -->
       <div class="text-center mb-16">
-        <h1 class="text-4xl font-serif text-gold mb-4 uppercase tracking-widest">{t['donations.title']}</h1>
+        <h1 class="text-4xl font-serif text-gold mb-4 uppercase tracking-widest">Support the Sect</h1>
         <div class="w-16 h-px bg-gold/30 mx-auto"></div>
       </div>
 
       <!-- Informational Content -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-20">
         <div class="space-y-6">
-          <h2 class="text-2xl font-serif text-[#D1D1C7]">{t['donations.why_title']}</h2>
+          <h2 class="text-2xl font-serif text-[#D1D1C7]">Why contribute?</h2>
           <p class="text-sm text-[#D1D1C7]/70 leading-relaxed">
-            {t['donations.why_desc']}
+            Every original chapter, system update, and Guardian Spirit (Bot) maintenance requires spiritual energy and mortal world resources.
           </p>
           <ul class="text-[11px] space-y-3 text-gold/60 uppercase tracking-widest">
             <li class="flex items-center gap-3">
               <span class="w-1.5 h-1.5 bg-gold rounded-full"></span>
-              {t['donations.benefit_1']}
+              Faster transmissions
             </li>
             <li class="flex items-center gap-3">
               <span class="w-1.5 h-1.5 bg-gold rounded-full"></span>
-              {t['donations.benefit_2']}
+              Lag-free servers
             </li>
             <li class="flex items-center gap-3">
               <span class="w-1.5 h-1.5 bg-gold rounded-full"></span>
-              {t['donations.benefit_3']}
+              New AI features
             </li>
           </ul>
         </div>
         <div class="bg-void-light border border-gold/10 p-8 text-center italic text-gold/40 text-sm">
-          {t['donations.quote']}
+          "He who plants a tree for others to enjoy its shade has understood the true path of the Dao."
         </div>
       </div>
 
       <!-- Personalized Message -->
       <div class="max-w-2xl mx-auto mb-16 text-center space-y-4">
         <p class="text-[11px] text-[#D1D1C7]/50 leading-relaxed uppercase tracking-widest">
-          Dear Reader, By making a contribution, you are directly helping us bring you better content and daily updates for the novels you love. We truly appreciate your support!
+          Dear Reader, by making a contribution, you help us deliver better content and daily updates for the novels you love. We truly appreciate your support!
         </p>
         <p class="text-[9px] text-gold/30 italic tracking-tighter">
-          Feel free to tell us your opinions in the customer notes, or maybe your nickname for making you part of our Weekly Dao Table (optional)
+          Leave us a note or nickname to appear on the Dao Table (optional).
         </p>
       </div>
 
@@ -61,7 +55,7 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
           <div class="w-full max-w-[300px]">
             <div id="paypal-container-FA9AKAMVV7APS"></div>
           </div>
-          <p class="mt-8 text-[10px] text-gold/30 uppercase tracking-widest font-serif">Mortal Support â€¢ PayPal</p>
+          <p class="mt-8 text-[10px] text-gold/30 uppercase tracking-widest font-serif">Mortal Support • PayPal</p>
         </div>
 
         <!-- Ko-fi Block -->
@@ -80,7 +74,7 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 
       <!-- Final Note -->
       <div class="text-center p-8 border border-dashed border-gold/10 text-[10px] text-[#D1D1C7]/40 uppercase tracking-[0.3em]">
-        {t['donations.note']}
+        All donations will appear on the Dao Table within 24-48 Earth hours.
       </div>
     </div>
   </div>
@@ -95,9 +89,7 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
         }).render("#paypal-container-FA9AKAMVV7APS");
       }
     }
-    // Try to init after load
     window.addEventListener('load', initPayPal);
-    // Fallback
     setTimeout(initPayPal, 2000);
   </script>
 </BaseLayout>

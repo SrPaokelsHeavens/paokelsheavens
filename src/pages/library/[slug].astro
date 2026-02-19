@@ -1,11 +1,9 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getLangFromUrl, useTranslations, useLocalizedPath } from '../../i18n/utils';
 
 export async function getStaticPaths() {
   const novels = await getCollection('library', ({ data }) => data.type === 'novel');
-  
   return novels.map(novel => {
     const cleanSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
     return {
@@ -18,22 +16,15 @@ export async function getStaticPaths() {
 const { novel } = Astro.props;
 const { title, description, author, status, genres, cover, id } = novel.data as any;
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
-const l = useLocalizedPath(lang);
-
-// 1. Fetch all volumes for this novel
 const volumes = await getCollection('library', (entry) => {
   return entry.data.type === 'volume' && (entry.data as any).novel_id === id;
 });
 volumes.sort((a, b) => (a.data as any).vol_number - (b.data as any).vol_number);
 
-// 2. Fetch all chapters for this novel
 const allChapters = await getCollection('library', (entry) => {
   return entry.data.type === 'chapter' && (entry.data as any).novel_id === id;
 });
 
-// Helper to get chapters for a specific volume
 const getChaptersForVolume = (volId: string) => {
   return allChapters
     .filter(ch => (ch.data as any).vol_id === volId)
@@ -86,7 +77,7 @@ const cleanNovelSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
 
           <div class="flex gap-4 pt-4">
             {firstChapter ? (
-                <a href={l(`library/${firstChapter.slug}`)} class="bg-gold text-void px-10 py-4 font-serif font-bold text-xs tracking-[0.2em] hover:bg-[#D4AF37] transition-all uppercase shadow-lg">
+                <a href={`/library/${firstChapter.slug}`} class="bg-gold text-void px-10 py-4 font-serif font-bold text-xs tracking-[0.2em] hover:bg-[#D4AF37] transition-all uppercase shadow-lg">
                   Read First Chapter
                 </a>
             ) : (
@@ -100,7 +91,7 @@ const cleanNovelSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
 
       <!-- --- NEW INTERACTIVE INDEX --- -->
       <section id="novel-index" class="mt-32" data-novel-id={id}>
-        <h2 class="text-2xl font-serif text-gold mb-8 uppercase tracking-[0.4em] text-center md:text-left">{t('reader.index')}</h2>
+        <h2 class="text-2xl font-serif text-gold mb-8 uppercase tracking-[0.4em] text-center md:text-left">Index</h2>
         
         <!-- Volume Selector Bar -->
         <div class="flex flex-wrap justify-center md:justify-start gap-4 mb-12 border-b border-gold/10 pb-8">
@@ -109,7 +100,7 @@ const cleanNovelSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
               data-vol-tab={volume.data.id}
               class="volume-tab group relative flex items-center gap-3 px-6 py-3 border border-gold/10 hover:border-gold/40 transition-all duration-500 overflow-hidden"
             >
-              <span class="text-2xl font-serif italic text-gold/20 group-hover:text-gold/60 transition-colors">
+              <span class="text-2xl font-serif italic text-gold/20 group-hover:text-gold/60 transition-colors vol-number">
                 {String((volume.data as any).vol_number).padStart(2, '0')}
               </span>
               <span class="vol-full-name hidden text-[10px] text-gold uppercase tracking-[0.2em] animate-fade-in">
@@ -133,7 +124,7 @@ const cleanNovelSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {volChapters.map(chapter => (
                     <a 
-                      href={l(`library/${chapter.slug}`)} 
+                      href={`/library/${chapter.slug}`} 
                       data-chapter-id={chapter.id}
                       class="group p-5 bg-void-light/30 border border-gold/5 hover:border-gold/30 hover:bg-gold/5 transition-all flex items-center justify-between"
                     >
@@ -164,7 +155,7 @@ const cleanNovelSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
     .volume-tab.active .vol-full-name {
       display: inline-block !important;
     }
-    .volume-tab.active .text-gold\/20 {
+    .volume-tab.active .vol-number {
       color: #c5a059 !important;
       opacity: 1;
     }
@@ -201,11 +192,10 @@ const cleanNovelSlug = novel.slug.replace(/\/index$/, '').split('/')[0];
         tab.onclick = () => switchVolume(tab.getAttribute('data-vol-tab'));
       });
 
-      // --- AUTODETECT LAST READ VOLUME ---
       const progressMap = JSON.parse(localStorage.getItem('reading-progress-map') || '{}');
       const novelId = document.getElementById('novel-index')?.getAttribute('data-novel-id');
       
-      let targetVol = tabs[0]?.getAttribute('data-vol-tab'); // Default to Vol 1
+      let targetVol = tabs[0]?.getAttribute('data-vol-tab');
 
       if (novelId && progressMap[novelId]) {
         const lastVolId = progressMap[novelId].volId;

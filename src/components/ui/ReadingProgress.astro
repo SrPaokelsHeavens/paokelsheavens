@@ -1,10 +1,4 @@
 ---
-import { ui, defaultLang, languages } from '../../i18n/ui';
-
-const url = Astro.url;
-const pathSegments = url.pathname.split('/').filter(Boolean);
-const lang = Object.keys(languages).includes(pathSegments[0]) ? pathSegments[0] : defaultLang;
-const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 ---
 
 <div id="continue-reading-container" class="hidden mt-12 animate-fade-in">

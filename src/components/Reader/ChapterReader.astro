@@ -1,25 +1,19 @@
 ---
-import { getLangFromUrl, useTranslations, useLocalizedPath } from '../../i18n/utils';
-
 interface Props {
   chapter: any;
   novel: any;
   prevChapter: any;
   nextChapter: any;
-  lang: any;
 }
 
-const { chapter, novel, prevChapter, nextChapter, lang } = Astro.props;
+const { chapter, novel, prevChapter, nextChapter } = Astro.props;
 const { Content } = await chapter.render();
 
-const t = useTranslations(lang);
-const l = useLocalizedPath(lang);
-
 const getCleanUrl = (c: any) => {
-    return l(`library/${c.slug}`);
+    return `/library/${c.slug}`;
 };
 
-const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the chronicles?';
+const enjoyText = 'Enjoying the chronicles?';
 ---
 
 <div id="reader-container" class="min-h-screen transition-colors duration-500 pt-10 pb-32 w-full max-w-none overflow-x-hidden">
@@ -167,9 +161,9 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
 
     <!-- Header Section -->
     <header class="flex flex-col items-center text-center mb-24 pt-10 w-full max-w-none">
-      <a href={l(`library/${novel.slug}`)} class="w-full text-[10px] text-gold/40 hover:text-gold uppercase tracking-[0.4em] transition-colors mb-12">« {novel.data.title}</a>
+      <a href={`/library/${novel.slug}`} class="w-full text-[10px] text-gold/40 hover:text-gold uppercase tracking-[0.4em] transition-colors mb-12">« {novel.data.title}</a>
       <h1 class="w-full text-3xl md:text-5xl lg:text-6xl font-serif text-gold uppercase leading-tight tracking-tight">{chapter.data.title || 'Chapter ' + (chapter.data.chapter_number || '')}</h1>
-      <div class="text-[10px] text-gold/30 uppercase tracking-[0.3em] mt-6 border-t border-gold/5 pt-6 inline-block w-full">{t('reader.volume')} {chapter.data.vol_number} <span class="mx-4 opacity-20">•</span> {t('reader.chapter')} {chapter.data.chapter_number}</div>
+      <div class="text-[10px] text-gold/30 uppercase tracking-[0.3em] mt-6 border-t border-gold/5 pt-6 inline-block w-full">Volume {chapter.data.vol_number} <span class="mx-4 opacity-20">•</span> Chapter {chapter.data.chapter_number}</div>
     </header>
 
     <!-- Reading Content -->
@@ -193,9 +187,9 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
 
     <!-- Navigation -->
     <nav id="chapter-navigation" class="mt-24 pt-16 border-t border-gold/10 flex justify-between items-center relative z-50 px-4 w-full">
-      {prevChapter ? (<a href={getCleanUrl(prevChapter)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">{t('reader.previous')}</a>) : (<span class="text-xs md:text-sm font-serif text-gold/10 uppercase tracking-[0.2em] cursor-not-allowed">{t('reader.previous')}</span>)}
-      <a href={l(`library/${novel.slug}`)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">{t('reader.index')}</a>
-      {nextChapter ? (<a href={getCleanUrl(nextChapter)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">{t('reader.next')}</a>) : (<span class="text-xs md:text-sm font-serif text-gold/10 uppercase tracking-[0.2em] cursor-not-allowed">{t('reader.next')}</span>)}
+      {prevChapter ? (<a href={getCleanUrl(prevChapter)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">← Previous</a>) : (<span class="text-xs md:text-sm font-serif text-gold/10 uppercase tracking-[0.2em] cursor-not-allowed">← Previous</span>)}
+      <a href={`/library/${novel.slug}`} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">Index</a>
+      {nextChapter ? (<a href={getCleanUrl(nextChapter)} class="text-xs md:text-sm font-serif text-gold/40 hover:text-gold transition-colors uppercase tracking-[0.2em]">Next →</a>) : (<span class="text-xs md:text-sm font-serif text-gold/10 uppercase tracking-[0.2em] cursor-not-allowed">Next →</span>)}
     </nav>
   </div>
 </div>
@@ -401,6 +395,16 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
             this.isPaused = false;
             this.utterance = null;
             this.nextUtterance = null;
+
+            // Performance + sync helpers
+            this.activeIdx = null;
+            this.lastScrollAt = 0;
+
+            // Boundary support + fallback highlighter (some Chrome voices don't emit word boundaries)
+            this.boundaryEventsSeen = 0;
+            this.fallbackGuardTimer = null;
+            this.fallbackTimers = [];
+            this.currentChunkIndices = null;
             
             this.playBtn = document.getElementById('voice-play');
             this.pauseBtn = document.getElementById('voice-pause');
@@ -546,11 +550,23 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
         }
 
         highlight(index) {
-            this.words.forEach(w => w.classList.remove('active-word'));
-            if (this.words[index]) {
-                this.words[index].classList.add('active-word');
+            // Fast highlight: only touch the previous + current word (O(1) instead of O(N))
+            if (this.activeIdx !== null && this.words[this.activeIdx]) {
+                this.words[this.activeIdx].classList.remove('active-word');
+            }
+
+            this.activeIdx = index;
+            const el = this.words[index];
+            if (el) {
+                el.classList.add('active-word');
+
+                // Throttle scrollIntoView to keep Chrome responsive on long chapters
                 if (this.isPlaying) {
-                    this.words[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const now = Date.now();
+                    if (now - this.lastScrollAt > 250) {
+                        this.lastScrollAt = now;
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
             }
         }
@@ -568,14 +584,19 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
                 this.synth.resume();
                 this.isPaused = false;
                 this.updateUI(true);
+
+                // If the current voice doesn't emit boundary events, restart the fallback highlighter
+                if (this.boundaryEventsSeen === 0 && this.currentChunkIndices) {
+                    this.scheduleFallbackHighlighter(this.currentChunkIndices);
+                }
                 return;
             }
 
             if (this.pointer >= this.words.length) return;
 
             this.stop();
-            this.speakFromPointer();
             this.updateUI(true);
+            this.speakFromPointer();
         }
 
         speakFromPointer() {
@@ -585,6 +606,8 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
             for (let i = this.pointer; i < this.words.length; i++) {
                 currentText += this.words[i].textContent + " ";
                 chunkIndices.push(i);
+                if (chunkIndices.length >= 60) break;
+                if (currentText.length > 350) break;
                 if (currentText.length > 200 && /[.!?\n]/.test(this.words[i].textContent)) break;
             }
 
@@ -594,26 +617,55 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
             const selectedVoice = this.synth.getVoices().find(v => v.name === this.selectedVoiceName);
             if (selectedVoice) this.utterance.voice = selectedVoice;
             this.utterance.rate = parseFloat(this.speedSlider.value) || 1;
+            this.utterance.lang = (selectedVoice && selectedVoice.lang) ? selectedVoice.lang : 'en-US';
+
+            // Track chunk for fallback/highlight resume
+            this.currentChunkIndices = chunkIndices;
+            this.boundaryEventsSeen = 0;
+            this.clearFallbackTimers();
+
+            this.utterance.onstart = () => {
+                // Highlight immediately at start
+                this.highlight(this.pointer);
+
+                // If no boundary events arrive (common for some Chrome voices), start a timing-based fallback
+                this.scheduleFallbackHighlighter(chunkIndices);
+            };
 
             this.utterance.onboundary = (event) => {
-                if (event.name === 'word') {
-                    // Map character index back to our word indices
-                    const charIdx = event.charIndex;
-                    let currentPos = 0;
-                    for (let i = 0; i < chunkIndices.length; i++) {
-                        const wordLen = this.words[chunkIndices[i]].textContent.length + 1;
-                        if (charIdx >= currentPos && charIdx < currentPos + wordLen) {
-                            this.pointer = chunkIndices[i];
-                            this.highlight(this.pointer);
-                            break;
+                if (typeof event.charIndex !== 'number') return;
+
+                this.boundaryEventsSeen++;
+                if (this.boundaryEventsSeen == 1) {
+                    // Real boundary events are flowing → stop any fallback timers
+                    this.clearFallbackTimers();
+                }
+
+                // Map character index back to our word indices
+                const charIdx = event.charIndex;
+                let currentPos = 0;
+                for (let i = 0; i < chunkIndices.length; i++) {
+                    const wordLen = this.words[chunkIndices[i]].textContent.length + 1;
+                    if (charIdx >= currentPos && charIdx < currentPos + wordLen) {
+                        const newPointer = chunkIndices[i];
+                        if (newPointer !== this.pointer) {
+                            this.pointer = newPointer;
+                            window.requestAnimationFrame(() => this.highlight(this.pointer));
                         }
-                        currentPos += wordLen;
+                        break;
                     }
+                    currentPos += wordLen;
                 }
             };
 
             this.utterance.onend = () => {
                 if (this.isPlaying) {
+                    // Ensure the pointer advances to the end of this chunk even if no boundary events fired
+                    const lastWordInChunk = chunkIndices[chunkIndices.length - 1];
+                    if (typeof lastWordInChunk === 'number' && this.pointer < lastWordInChunk) {
+                        this.pointer = lastWordInChunk;
+                    }
+
                     this.pointer++;
                     if (this.pointer < this.words.length) {
                         this.speakFromPointer();
@@ -637,13 +689,61 @@ const enjoyText = lang === 'es' ? '¿Disfrutas las crónicas?' : 'Enjoying the c
             // (In this simple implementation, speakFromPointer handles continuity)
         }
 
+        clearFallbackTimers() {
+            if (this.fallbackGuardTimer) {
+                clearTimeout(this.fallbackGuardTimer);
+                this.fallbackGuardTimer = null;
+            }
+            if (this.fallbackTimers && this.fallbackTimers.length) {
+                this.fallbackTimers.forEach(id => clearTimeout(id));
+                this.fallbackTimers = [];
+            }
+        }
+
+        scheduleFallbackHighlighter(chunkIndices) {
+            // Guard: only start fallback if boundary events aren't coming
+            this.clearFallbackTimers();
+            this.fallbackGuardTimer = window.setTimeout(() => {
+                if (!this.isPlaying || this.isPaused) return;
+                if (this.boundaryEventsSeen > 0) return;
+                this.startFallbackHighlighter(chunkIndices);
+            }, 800);
+        }
+
+        startFallbackHighlighter(chunkIndices) {
+            // Timing-based (approx.) highlighting for voices that don't emit word boundaries
+            const baseWpm = 180;
+            const rate = parseFloat(this.speedSlider?.value) || 1;
+            const startPos = Math.max(0, chunkIndices.indexOf(this.pointer));
+            let t = 0;
+
+            for (let j = startPos; j < chunkIndices.length; j++) {
+                const wordIndex = chunkIndices[j];
+                const w = this.words[wordIndex];
+                const wordLen = (w && w.textContent) ? w.textContent.length : 1;
+                const weight = Math.min(1.8, Math.max(0.7, wordLen / 5));
+                const ms = Math.max(120, (60000 / (baseWpm * rate)) * weight);
+                t += ms;
+
+                const id = window.setTimeout(() => {
+                    if (!this.isPlaying || this.isPaused) return;
+                    this.pointer = wordIndex;
+                    this.highlight(wordIndex);
+                }, t);
+                this.fallbackTimers.push(id);
+            }
+        }
+
+
         pause() {
             this.synth.pause();
             this.isPaused = true;
+            this.clearFallbackTimers();
             this.updateUI(false);
         }
 
         stop() {
+            this.clearFallbackTimers();
             this.synth.cancel();
             this.isPlaying = false;
             this.isPaused = false;

@@ -1,29 +1,20 @@
-# Estrategia de Automatización y APIs
+# Automation Strategy (Discord-Free Roadmap)
 
-Este documento detalla cómo mantendremos la web actualizada sin costos operativos.
+## 1. Data Inputs
+- **Markdown Collections:** Chapters, news posts, and Dao tiers all live under src/content/**. Commits to these files are the main automation trigger.
+- **No Live APIs:** Discord, TikTok, YouTube, and Gemini integrations remain paused. Every automation hook must rely on repo data to avoid deployment blockers.
 
-## 1. Fuentes de Datos (The Nexus)
+## 2. Build Hooks
+- 
+pm run forge scans library/news/dao content and materializes carousel cards. It must succeed before Astro can sync collections.
+- 
+pm run build runs orge, sets ASTRO_TELEMETRY_DISABLED=1, and compiles the static site into dist/.
+- GitHub Actions will be re-enabled after Discord references are fully removed; until then, builds are manual.
 
-### A. YouTube API (Directa)
-- **Uso:** Traer los últimos videos o streams.
-- **Costo:** Gratuito (dentro de la cuota diaria).
+## 3. Future-Friendly Notes
+- Any new feed (social, announcements, etc.) must write to Markdown first (e.g., src/content/social/*.md). Static builds should never depend on live APIs.
+- Cron jobs should remain lightweight (<= every 12h) and only need 
+pm ci && npm run build.
 
-### B. Discord Hub (El Puente)
-Para evitar la burocracia de las APIs oficiales de Meta y TikTok:
-- Usaremos el servidor de Discord como "Base de Datos de Tránsito".
-- El Bot de la Secta (Gemini 3 Flash) monitoreará canales específicos.
-- Cuando se detecte un link de TikTok/FB en esos canales, se extraerá el metadato para el Event Stream de la web.
-
-### C. GitHub Actions (El Motor)
-- Se configurará un "Cron Job" que se ejecute cada 12 horas.
-- Este proceso reconstruirá la web, integrando las nuevas noticias, capítulos y eventos sociales detectados.
-
-## 2. Gestión de Credenciales
-- Todas las API Keys se almacenarán en **GitHub Secrets**.
-- Nunca se expondrán en el código fuente (Seguridad de Nivel Ancestral).
-
-## 3. Flujo de Publicación de Capítulos
-1. Subida de archivo `.md` a `src/content/chapters/`.
-2. GitHub Action detecta el cambio.
-3. El Bot de Discord anuncia el capítulo con un resumen de IA.
-4. La web se actualiza con el nuevo contenido.
+## 4. Secrets & Security
+- No API keys or tokens belong in this repo. We will document any future secret requirements inside docs/OPERATIONAL_WORKFLOW.md before implementation.

@@ -1,37 +1,39 @@
-# Lineamientos Finales de Arquitectura (The Golden Edict)
+# Final Architecture Guidelines (The Golden Edict v2)
 
-Este documento es la autoridad final sobre la implementación técnica de "Heaven's Path Web". Cualquier desviación debe ser aprobada por el Consejo de Ancianos (Usuario y Agente).
+This revision supersedes the multilingual/Discord-era edict. All contributors must follow the directives below until a new decree is issued.
 
-## 1. Arquitectura del Núcleo (Core)
-- **Engine:** Astro 5.0 (Modo Estático).
-- **Estilos:** Tailwind CSS v4 (Configuración Dark Mode forzada).
-- **Base de Datos:**
-  - `src/content/novels/*.md` (Capítulos).
-  - `src/content/config.ts` (Definición estricta de esquemas Zod).
-  - `src/data/*.json` (Datos volátiles: donantes, redes).
+## 1. Core Stack
+- **Framework:** Astro 5.x (static output only).
+- **Styling:** Tailwind CSS with dark theme defaults defined in src/styles/global.css.
+- **Content Source of Truth:** Markdown collections in src/content/** plus structured JSON (only where Markdown is not yet migrated).
+- **Automation Scripts:** scripts/forge-carousel.js (mandatory before every dev/uild), scripts/postinstall-fixes.js (patched during 
+pm install).
 
-## 2. Protocolos de Automatización (The Automaton)
-### A. Frecuencia de Actualización
-- **Triggers de Build:**
-  - `on: push` (Inmediato al subir capítulos/cambios).
-  - `schedule: cron '0 */6 * * *'` (Cada 6 horas para barrido de redes).
-### B. Extracción de Datos (Discord Bridge)
-- El script de build (`scripts/fetch-socials.js`) consultará la API de Discord.
-- **Librerías Permitidas:** `discord.js` (solo REST mode), `metascraper` (para enriquecer links).
-- **Fallback:** Si la API falla, el build NO debe romperse; usará la caché anterior.
+## 2. Language Policy
+- The site is 100% English. Do not add locale toggles, translation dropdowns, or Spanish/Chinese copy.
+- Markdown frontmatter must use English enums (e.g., status: "Ongoing").
+- Retired i18n news, assets, or branches must not be reintroduced; delete any leftover references when encountered.
 
-## 3. Inteligencia Artificial (Gemini 3 Flash)
-- **Uso 1 (Build Time):** Generación de "Meta-Descriptions" para SEO y resúmenes de capítulos en el listado.
-- **Uso 2 (Runtime - Bot):** Chat interactivo en Discord (alojado externamente).
-- **Restricción:** La API Key nunca debe estar en el cliente (navegador).
+## 3. Integrations & Tooling
+- **Discord / Gemini / External APIs:** Disabled until we design a compliant flow. Keep scripts/fetch-events.js stubbed and do not add runtime API calls.
+- **Images:** Prefer remote HTTPS sources vetted for stability. When adding local assets, convert to WebP and store under public/ or Astro assets.
+- **Telemetry:** Remains disabled through ASTRO_TELEMETRY_DISABLED=1 in the build script.
 
-## 4. Estándares de Código (Code Cultivation)
-- **Componentes:** Astro Components (`.astro`) por defecto. React/Svelte solo si es estrictamente necesario para interactividad compleja (ej: el Infinite Scroll).
-- **Tipado:** TypeScript estricto.
-- **Performance:** Todas las imágenes deben estar en formato `.webp` y procesadas por Astro Assets.
+## 4. Content Collections
+- Library hierarchy: 
+ovel -> volume -> chapter enforced through src/content/config.ts discriminated union.
+- Carousel entries are derived, not hand-authored unless absolutely necessary (	ype: "manual"). Run 
+pm run forge to regenerate cards after content edits.
+- Dao Table is being migrated to Markdown tiers; until it lands, do not add new donors to the JSON file.
 
-## 5. Plan de Ejecución Inmediata
-1. Inicializar Astro.
-2. Instalar dependencias (`tailwindcss`, `framer-motion`, `discord.js`).
-3. Crear Layout Base (Header, Footer, Fondo).
-4. Implementar "Chronicles Stream".
+## 5. Build & Deployment
+- Always execute 
+pm run forge (directly or via 
+pm run dev/build) prior to verifying UI changes.
+- Windows realpath/esbuild patches are handled automatically by postinstall-fixes. Do not upgrade Vite/Esbuild without revalidating those patches.
+- GitHub Pages remains the deployment target; CI will later be restored once Discord blockers are gone.
+
+## 6. Quality Gates
+- No broken links or placeholder # URLs in committed code.
+- Avoid inline scripts that manipulate the DOM outside Astro components unless there is no other option (e.g., TTS reader helper).
+- Keep documentation synchronized with reality�if a feature is removed, its governance references must disappear in the same PR.

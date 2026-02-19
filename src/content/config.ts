@@ -1,5 +1,14 @@
 import { defineCollection, z } from 'astro:content';
 
+const celestialTierEnum = z.enum([
+  'Celestial Body Refining Realm',
+  'Celestial Foundation Realm',
+  'Celestial Core Realm',
+  'Celestial Soul Realm',
+  'Celestial Transformation Realm',
+  'Celestial Sovereign Realm',
+]);
+
 // --- UNIFIED LIBRARY COLLECTION (Novel -> Volume -> Chapter) ---
 const library = defineCollection({
   type: 'content',
@@ -11,7 +20,7 @@ const library = defineCollection({
       title: z.string(),
       description: z.string(),
       author: z.string(),
-      status: z.enum(['En curso', 'Finalizada', 'Pausada']),
+      status: z.enum(['Ongoing', 'Completed', 'Hiatus']),
       genres: z.array(z.string()),
       cover: z.string(),
       featured: z.boolean().default(false),
@@ -108,9 +117,70 @@ const news = defineCollection({
   }),
 });
 
+// --- DAO TABLE (Recognition Tiers) ---
+const dao = defineCollection({
+  type: 'content',
+  schema: z.object({
+    tier: celestialTierEnum,
+    name: z.string(),
+    epithet: z.string().optional(),
+    since: z.string().optional(),
+    message: z.string().optional(),
+    image: z.string().optional(),
+    highlight: z.boolean().default(true),
+    order: z.number().optional(),
+  }),
+});
+
+const daoTableEntries = defineCollection({
+  type: 'content',
+  schema: z.object({
+    alias: z.string(),
+    cultivationLevel: z.string(),
+    tier: celestialTierEnum,
+    joined: z.string().optional(),
+    note: z.string().optional(),
+    status: z.enum(['active', 'retired', 'archived']).default('active'),
+  }),
+});
+
+const daoTiers = defineCollection({
+  type: 'content',
+  schema: z.object({
+    tier: celestialTierEnum,
+    title: z.string(),
+    summary: z.string().default('Tier upcoming.'),
+    image: z.string(),
+    priority: z.number().default(0),
+  }),
+});
+
+const sectMembers = defineCollection({
+  type: 'content',
+  schema: z.object({
+    tier: celestialTierEnum,
+    alias: z.string(),
+    epithet: z.string().optional(),
+    focus: z.string().optional(),
+    since: z.string().optional(),
+    note: z.string().optional(),
+    status: z.enum(['active', 'paused']).default('active'),
+  }),
+});
+
+const daoTable = defineCollection({
+  type: 'data',
+  schema: z.object({}),
+});
+
 export const collections = {
   library,
   news,
   carousel,
   settings,
+  dao,
+  daoTableEntries,
+  daoTiers,
+  sectMembers,
+  'dao-table': daoTable,
 };

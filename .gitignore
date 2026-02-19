@@ -13,3 +13,4 @@ yarn-error.log*
 .astro/
 # vite storage
 .vite/
+.npm-cache/

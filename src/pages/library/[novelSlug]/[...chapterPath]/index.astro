@@ -2,7 +2,6 @@
 import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import ChapterReader from '../../../../components/Reader/ChapterReader.astro';
-import { getLangFromUrl } from '../../../../i18n/utils';
 
 export async function getStaticPaths() {
   const libraryEntries = await getCollection('library', ({ data }) => data.type === 'chapter');
@@ -26,7 +25,6 @@ const { chapter, novelSlug } = Astro.props;
 
 // Fetch the novel metadata from the new collection using novel_id from chapter data
 const novel = await getEntry('library', (chapter.data as any).novel_id);
-const lang = getLangFromUrl(Astro.url);
 
 // --- NEW NAVIGATION LOGIC (Relational & Hierarchical) ---
 // 1. Get all chapters for this specific novel
@@ -55,6 +53,5 @@ const nextChapter = allChapters[currentIndex + 1];
     novel={novel} 
     prevChapter={prevChapter} 
     nextChapter={nextChapter} 
-    lang={lang} 
   />
 </BaseLayout>

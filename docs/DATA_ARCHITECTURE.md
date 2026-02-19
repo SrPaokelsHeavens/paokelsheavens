@@ -1,70 +1,38 @@
-# Arquitectura de Datos - Scriptorium Digital
+# Data Architecture � Digital Scriptorium
 
-Para un portal de novelas estilo Wuxiaworld en un entorno estático, seguiremos una estructura de **Colecciones Estáticas**.
+## 1. Collections & Schemas
+- **Library (src/content/library)**
+  - 	ype: "novel" frontmatter defines metadata (title, author, status, genres, cover, featured).
+  - 	ype: "volume" stores per-volume metadata.
+  - 	ype: "chapter" carries relational pointers (
+ovel_id, ol_id) plus publish metadata.
+- **News (src/content/news)**
+  - Markdown entries with 	itle, publishDate, category, excerpt, image, uthor.
+- **Dao Table (src/content/dao)**
+  - Each Markdown file represents a supporter in one of six tiers (Body Refining ? Sovereign) with fields for name, epithet, message, and optional imagery.
+- **Carousel (src/content/carousel)**
+  - Generated Markdown cards; do not edit manually unless debugging the forge.
+- **Settings (src/content/settings)**
+  - control.md frontmatter drives carousel filtering; egistry.json tracks processed IDs.
 
-## 1. Entidades de Información
+## 2. Derived Data
+- scripts/forge-carousel.js now unifies chapters, news, **and** DAO entries into hero-ready cards.
+- Frontmatter fields (highlight, since, etc.) determine whether DAO entries appear in the carousel feed.
+- LocalStorage features (reading progress, notification prompt) augment UX but never feed build-time data.
 
-### A. Serie / Novela (Series)
-Es el contenedor principal. Cada serie se define por un archivo de configuración y una carpeta de capítulos.
-- **Campos:**
-  - `title`: Título de la obra.
-  - `slug`: Identificador URL (ej: `el-camino-del-vacio`).
-  - `description`: Sinopsis detallada.
-  - `author`: Autor original.
-  - `translator`: Quién traduce/edita.
-  - `status`: [En curso, Pausada, Finalizada].
-  - `genres`: Lista de géneros (Xianxia, Wuxia, Seinen, etc.).
-  - `tags`: Etiquetas adicionales (Cultivo, Reencarnación, OpMC).
-  - `cover`: Ruta a la imagen de portada.
+## 3. File vs. JSON
+- All donor data moved to Markdown; src/data/donors.json has been retired.
+- Add new structured datasets as Markdown collections whenever possible so Astro validates them with Zod.
 
-### B. Capítulo (Chapter)
-Archivos individuales en formato Markdown (.md).
-- **Campos en Frontmatter (Cabecera):**
-  - `title`: Nombre del capítulo.
-  - `number`: Número de orden.
-  - `volume`: Volumen al que pertenece.
-  - `publishDate`: Fecha de lanzamiento.
-- **Contenido:** Texto plano con soporte para formato rico (itálicas para pensamientos, negritas para habilidades).
+## 4. Client-Side Storage
+- eading-progress-map + last-read keys live in LocalStorage.
+- Notifications prompt stores pkh-notification-choice. These are UX conveniences only.
 
-### C. Géneros y Categorías
-Sistema de filtrado basado en constantes para evitar errores de tipeo.
-- **Lista Base:** Cultivo, Artes Marciales, Alquimia, Bestias, Romance, Tragedia.
-
-## 2. Flujo de Información
-
-1. **Entrada de Datos:** Se crea un archivo `.md` en la carpeta correspondiente.
-2. **Procesamiento:** El motor (Astro) lee la carpeta `src/content/novels/` y genera automáticamente:
-   - La página de la novela.
-   - El índice de capítulos.
-   - La página de lectura con navegación (Previo/Siguiente).
-3. **Búsqueda/Filtros:** Se genera un índice JSON en tiempo de compilación para que el buscador de la web sea instantáneo sin consultar una base de datos.
-
-## 3. Gestión de "Usuarios" (Solución Estática)
-Dado que GitHub Pages no permite bases de datos dinámicas:
-- **Lectura:** Pública y libre.
-- **Progreso de lectura:** Se guardará en el **LocalStorage** del navegador del usuario (sin necesidad de cuenta).
-- **Comentarios:** Integración con **Giscus** (usa GitHub Discussions) o **Disqus**.
-- **Comunidad:** Widget lateral de Discord para chat en vivo.
-
-## 4. Dao Table (Sistema de Donantes)
-Los donantes se gestionarán en un archivo `src/data/donors.json`.
-- **Rangos (Tiers):**
-  - `Immortal`: Donantes de mayor nivel.
-  - `Sect Elder`: Donantes recurrentes.
-  - `Core Disciple`: Donantes recientes o semanales.
-- **Campos por Donante:** `name`, `rank`, `amount_hidden` (booleano), `message` (opcional).
-
-## 5. Chronicles of the Heavens (Event Stream)
-Sistema de agregación de eventos cronológicos.
-- **Fuentes:**
-  - `internal`: Generado automáticamente de las carpetas de capítulos y noticias.
-  - `external`: Archivo `src/data/social_feed.json` para redes sociales.
-- **Esquema de Evento:**
-  - `type`: [chapter, social, news, update].
-  - `platform`: [facebook, tiktok, youtube, web].
-  - `title`: Texto breve.
-  - `url`: Link al contenido.
-  - `timestamp`: Fecha exacta para ordenamiento.
-
-## 6. Donaciones (Pasarelas)
-- Enlaces directos a pasarelas externas (PayPal, Ko-fi, Patreon, Crypto Wallets).
+## 5. Contribution Flow
+1. Add or edit Markdown under src/content/** (library, news, dao).
+2. Run 
+pm run forge to refresh carousel drafts.
+3. Run 
+pm run dev or 
+pm run build to validate.
+4. Commit both content changes and any generated carousel files together.

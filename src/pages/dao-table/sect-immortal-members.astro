@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const tierOrder = [
+  'Celestial Body Refining Realm',
+  'Celestial Foundation Realm',
+  'Celestial Core Realm',
+  'Celestial Soul Realm',
+  'Celestial Transformation Realm',
+  'Celestial Sovereign Realm',
+];
+
+const tierEntries = await getCollection('daoTiers');
+const tierImages = new Map(tierEntries.map((entry) => [entry.data.tier, entry.data.image]));
+
+const members = await getCollection('sectMembers');
+
+const benefitPlan = [
+  { tier: 'Celestial Body Refining Realm', perks: ['Hidden Wiki'] },
+  { tier: 'Celestial Foundation Realm', perks: ['Special tomes & chapters'] },
+  { tier: 'Celestial Core Realm', perks: ['Mysterious manuscripts'] },
+  { tier: 'Celestial Soul Realm', perks: ['Our own Heavenly Reader'] },
+  { tier: 'Celestial Transformation Realm', perks: ['Web & mobile game projects (closed alphas)', 'Amazon full books'] },
+  { tier: 'Celestial Sovereign Realm', perks: ['Merch drops', 'Web sect pavilion', 'And many more in development'] },
+];
+
+const cumulativePerks = [];
+const tierBenefits = new Map();
+
+benefitPlan.forEach((plan, index) => {
+  const totalChapters = 5 * (index + 1);
+  cumulativePerks.push(...plan.perks);
+  const perks = [`Up to ${totalChapters} advanced chapters`, ...cumulativePerks];
+  tierBenefits.set(plan.tier, {
+    chapters: totalChapters,
+    perks,
+  });
+});
+
+const tierGroups = tierOrder.map((tier) => {
+  const people = members
+    .filter((member) => member.data.tier === tier)
+    .sort((a, b) => (a.data.alias || '').localeCompare(b.data.alias || ''))
+    .map((entry) => ({
+      alias: entry.data.alias,
+      epithet: entry.data.epithet,
+      focus: entry.data.focus,
+      since: entry.data.since,
+      note: entry.data.note,
+      image: tierImages.get(tier),
+    }));
+
+  return {
+    tier,
+    benefits: tierBenefits.get(tier),
+    entries: people,
+  };
+});
+---
+
+<BaseLayout title="Sect Immortal Members" description="Monthly supporters sorted by cultivation tier.">
+  <section class="py-20">
+    <div class="container mx-auto px-4 max-w-3xl text-center">
+      <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">Recurring Patrons</p>
+      <h1 class="text-4xl font-serif text-gold tracking-[0.2em] uppercase mb-4">Sect Immortal Members</h1>
+      <p class="text-sm text-[#d1d1c7]/70">Every monthly pledge keeps our scribes housed, the servers humming, and the experimentation budget alive. Add or remove members by editing Markdown files inside <code>src/content/dao-table/sect-immortal-members</code>.</p>
+    </div>
+  </section>
+
+  <section class="container mx-auto px-4 pb-24 space-y-20">
+    {tierGroups.map((group) => (
+      <div>
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-serif text-gold tracking-[0.3em] uppercase">{group.tier}</h2>
+          {group.benefits && (
+            <p class="text-sm text-[#d1d1c7]/70 max-w-2xl mx-auto mt-4">Benefits: {group.benefits.perks.join(', ')}.</p>
+          )}
+        </div>
+
+        {group.entries.length === 0 ? (
+          <div class="border border-dashed border-gold/20 text-center py-12 text-[11px] uppercase tracking-[0.3em] text-gold/40">Awaiting members</div>
+        ) : (
+          <div class="dao-grid">
+            {group.entries.map((member) => (
+              <article class="dao-card">
+                {member.image && <div class="dao-card__image" style={`background-image: url(${member.image});`}></div>}
+                <div class="dao-card__body">
+                  <p class="text-[10px] text-gold/60 uppercase tracking-[0.3em] mb-2">{member.focus || 'Sect Member'}</p>
+                  <h3 class="text-2xl font-serif text-gold mb-1">{member.alias}</h3>
+                  <p class="text-xs text-[#d1d1c7]/60 italic mb-4">{member.epithet || 'Immortal Member'}</p>
+                  {member.note && <p class="text-sm text-[#d1d1c7]/70">{member.note}</p>}
+                  <div class="text-[10px] text-gold/40 uppercase tracking-[0.3em] mt-6">{member.since ? `Since ${member.since}` : 'Active'}</div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    ))}
+  </section>
+</BaseLayout>
+
+<style>
+  .dao-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .dao-card {
+    position: relative;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    background: rgba(5, 5, 5, 0.85);
+    min-height: 260px;
+    overflow: hidden;
+  }
+
+  .dao-card__image {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+  }
+
+  .dao-card__body {
+    position: relative;
+    padding: 1.75rem;
+  }
+</style>

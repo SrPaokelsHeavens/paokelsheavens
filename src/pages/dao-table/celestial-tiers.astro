@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const tiers = await getCollection('daoTiers');
+const ordered = tiers.sort((a, b) => a.data.priority - b.data.priority);
+---
+
+<BaseLayout title="Celestial Tiers" description="Blueprint of every Dao tier, managed entirely via Markdown.">
+  <section class="py-20">
+    <div class="container mx-auto px-4 max-w-3xl text-center mb-16">
+      <p class="text-[10px] tracking-[0.35em] uppercase text-gold/70 mb-4">Dao Table Subpage</p>
+      <h1 class="text-4xl font-serif text-gold tracking-[0.2em] uppercase mb-4">Celestial Tiers</h1>
+      <p class="text-sm text-[#d1d1c7]/70">Every card mirrors a Markdown file inside <code>src/content/dao-table/dao-tiers</code>. Update, add, or remove tiers without touching the UI.</p>
+    </div>
+
+    <div class="tier-grid container mx-auto px-4">
+      {ordered.map((tier) => (
+        <article class="tier-card">
+          <div class="tier-media" style={`background-image: url(${tier.data.image});`}></div>
+          <div class="tier-body">
+            <p class="text-[10px] uppercase tracking-[0.4em] text-gold/50 mb-2">Tier</p>
+            <h2 class="text-2xl font-serif text-gold mb-2">{tier.data.title}</h2>
+            <p class="text-sm text-[#d1d1c7]/70">{tier.data.summary || 'Tier upcoming.'}</p>
+          </div>
+          <div class="tier-footer text-[10px] uppercase tracking-[0.3em] text-gold/50">Tier upcoming</div>
+        </article>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .tier-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(197, 160, 89, 0.15);
+    background: rgba(5, 5, 5, 0.9);
+    overflow: hidden;
+    min-height: 320px;
+  }
+
+  .tier-media {
+    height: 150px;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.7;
+  }
+
+  .tier-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+  }
+
+  .tier-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(197, 160, 89, 0.1);
+    text-align: center;
+  }
+</style>
