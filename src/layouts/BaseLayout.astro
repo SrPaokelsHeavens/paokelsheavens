@@ -5,10 +5,31 @@ import NotificationPrompt from '../components/ui/NotificationPrompt.astro';
 interface Props {
 	title: string;
 	description?: string;
+	image?: string;
+	noIndex?: boolean;
 }
 
-const { title, description = "Sr.Paokel's Sect Scriptorium. Chronicles of Immortals." } = Astro.props;
+const {
+	title,
+	description = "Sr. Paokel's Sect Scriptorium. Chronicles of Immortals.",
+	image,
+	noIndex = false,
+} = Astro.props;
 const currentPath = Astro.url.pathname;
+
+const DEPLOY_DOMAIN = 'https://paokelsheavens.asia';
+const BASE_SEGMENT = '/paokelsheavens';
+const fallbackImage = image ?? 'https://images.unsplash.com/photo-1470770903676-69b98201ea1c?q=80&w=1200';
+const rawPath = currentPath || '/';
+let canonicalPath = rawPath.startsWith(BASE_SEGMENT)
+	? rawPath.slice(BASE_SEGMENT.length) || '/'
+	: rawPath || '/';
+if (!canonicalPath.startsWith('/')) {
+	canonicalPath = `/${canonicalPath}`;
+}
+const canonicalUrl = new URL(canonicalPath, DEPLOY_DOMAIN).toString();
+const metaTitle = `${title} | PAOKELSHEAVENS`;
+const metaDescription = description;
 
 const isActive = (path: string) => {
 	if (path === '/') return currentPath === '/';
@@ -20,11 +41,28 @@ const isActive = (path: string) => {
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content={description} />
+		<meta name="description" content={metaDescription} />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>{title} | PAOKELSHEAVENS</title>
+		{noIndex ? (
+			<meta name="robots" content="noindex, nofollow" />
+		) : (
+			<meta name="robots" content="index, follow" />
+		)}
+		<link rel="canonical" href={canonicalUrl} />
+		<title>{metaTitle}</title>
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="PAOKELSHEAVENS" />
+		<meta property="og:title" content={metaTitle} />
+		<meta property="og:description" content={metaDescription} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={fallbackImage} />
+		<meta property="og:image:alt" content={title} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={metaTitle} />
+		<meta name="twitter:description" content={metaDescription} />
+		<meta name="twitter:image" content={fallbackImage} />
 		
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -267,7 +305,7 @@ const isActive = (path: string) => {
 					<div class="flex justify-center md:justify-start gap-4 text-[10px]">
 						<a href="/community" class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Community Hub</a>
 						<a href="/news" class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Newsroom</a>
-						<a href="mailto:admin@srpaokelsheavens.eu.org" class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Email</a>
+						<a href="mailto:admin@paokelsheavens.asia" class="text-[#D1D1C7]/60 hover:text-gold transition-colors">Email</a>
 					</div>
 				</div>
 			</div>

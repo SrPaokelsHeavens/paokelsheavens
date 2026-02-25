@@ -4,9 +4,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import LibraryCard from '../../components/Library/LibraryCard.astro';
 
 const allNovels = await getCollection('library', (entry) => entry.data.type === 'novel');
+const pageDescription = 'Browse every cultivation chronicle within the Imperial Library, including Ultimate Martial Will and Jade Throne Shadow.';
+const pageImage = 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1600';
 ---
 
-<BaseLayout title="Imperial Library">
+<BaseLayout title="Imperial Library" description={pageDescription} image={pageImage}>
   <div class="py-20">
     <div class="container mx-auto px-4">
       <div class="max-w-3xl mx-auto text-center mb-16">

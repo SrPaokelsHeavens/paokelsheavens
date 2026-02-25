@@ -25,6 +25,8 @@ const { chapter, novelSlug } = Astro.props;
 
 // Fetch the novel metadata from the new collection using novel_id from chapter data
 const novel = await getEntry('library', (chapter.data as any).novel_id);
+const pageTitle = `${novel?.data.title} - ${chapter.data.title || 'Reader'}`;
+const chapterDescription = `Read ${chapter.data.title} from ${novel?.data.title}, Volume ${(chapter.data as any).vol_number}, exclusively on Paokels Heavens.`;
 
 // --- NEW NAVIGATION LOGIC (Relational & Hierarchical) ---
 // 1. Get all chapters for this specific novel
@@ -47,7 +49,11 @@ const prevChapter = allChapters[currentIndex - 1];
 const nextChapter = allChapters[currentIndex + 1];
 ---
 
-<BaseLayout title={`${novel?.data.title} - ${chapter.data.title || 'Reader'}`}>
+<BaseLayout
+  title={pageTitle}
+  description={chapterDescription}
+  image={novel?.data.cover}
+>
   <ChapterReader 
     chapter={chapter} 
     novel={novel} 

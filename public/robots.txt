@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://srpaokelsheavens.eu.org/sitemap-index.xml
+Sitemap: https://paokelsheavens.asia/sitemap.xml

@@ -12,10 +12,11 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();
+const seoDescription = entry.data.excerpt || `${entry.data.title} — latest Sect announcement from Paokels Heavens.`;
 
 ---
 
-<BaseLayout title={entry.data.title}>
+<BaseLayout title={entry.data.title} description={seoDescription} image={entry.data.image}>
   <div class="relative py-24 overflow-hidden min-h-screen">
     <!-- Background Decoration -->
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-[0.03] pointer-events-none select-none">
@@ -64,10 +65,11 @@ const { Content } = await entry.render();
             <p class="text-sm text-[#D1D1C7]/40 mb-8 italic relative z-10">All communications are written and archived. Choose a route below to continue the discussion.</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
                 <a href="/community" class="bg-gold text-void px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-[#D4AF37] transition-all uppercase">Open Community Hub</a>
-                <a href="mailto:admin@srpaokelsheavens.eu.org" class="border border-gold/30 text-gold px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-gold/10 transition-all uppercase">Email the Archivist</a>
+                <a href="mailto:admin@paokelsheavens.asia" class="border border-gold/30 text-gold px-8 py-3 text-[10px] font-serif font-bold tracking-widest hover:bg-gold/10 transition-all uppercase">Email the Archivist</a>
             </div>
         </div>
       </div>
     </div>
   </div>
 </BaseLayout>
+

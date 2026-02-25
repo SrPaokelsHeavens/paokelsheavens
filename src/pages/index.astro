@@ -20,6 +20,8 @@ const control = controlEntries.length > 0 ? controlEntries[0].data : {
 };
 
 const rawCarousel = await getCollection('carousel');
+const pageDescription = 'Chronicles of the Heavens shares every new chapter upload, Dao Table highlight, and sect announcement from Paokels Heavens.';
+const pageImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600';
 
 // Debug: Check if we have cards
 // console.log('Raw Cards:', rawCarousel.length);
@@ -126,7 +128,7 @@ const allEvents = curated.map(card => ({
 }));
 ---
 
-<BaseLayout title="Home">
+<BaseLayout title="Home" description={pageDescription} image={pageImage}>
 	<!-- Hero Section -->
 	<section class="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-20">
 		<div class="absolute inset-0 z-0">

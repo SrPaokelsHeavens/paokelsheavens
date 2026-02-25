@@ -13,6 +13,20 @@ const DAO_TABLE_PATH = path.join(CONTENT_PATH, 'daoTableEntries');
 const DAO_TIER_PATH = path.join(CONTENT_PATH, 'daoTiers');
 const DAO_MEMBERS_PATH = path.join(CONTENT_PATH, 'dao-table', 'sect-immortal-members');
 const IMMORTAL_SPIRITS_PATH = path.join(CONTENT_PATH, 'dao-table', 'table');
+const PUBLIC_PATH = path.join(process.cwd(), 'public');
+const SITEMAP_FILE = path.join(PUBLIC_PATH, 'sitemap.xml');
+const CANONICAL_BASE_URL = 'https://paokelsheavens.asia';
+const STATIC_ROUTES = [
+    '/',
+    '/library',
+    '/news',
+    '/dao-table',
+    '/dao-table/celestial-tiers',
+    '/dao-table/sect-immortal-members',
+    '/dao-table/immortal-spirits',
+    '/community',
+    '/donations'
+];
 
 function collectMarkdownFiles(dir) {
     let results = [];
@@ -447,7 +461,53 @@ async function forge() {
     registry.lastSync = new Date().toISOString();
     fs.writeFileSync(REGISTRY_FILE, JSON.stringify(registry, null, 2));
 
+    generateSitemap(sources);
+
     console.log(`Forge complete. ${newlyCreated} new cards materialized.`);
+}
+
+function generateSitemap(sourceList) {
+    try {
+        if (!fs.existsSync(PUBLIC_PATH)) {
+            fs.mkdirSync(PUBLIC_PATH, { recursive: true });
+        }
+
+        const urlMap = new Map();
+        const registerUrl = (rawUrl, date) => {
+            if (!rawUrl) return;
+            let normalized = rawUrl.trim();
+            if (!normalized.startsWith('/')) {
+                normalized = `/${normalized}`;
+            }
+            if (normalized !== '/' && normalized.endsWith('/')) {
+                normalized = normalized.slice(0, -1);
+            }
+            const isoDate = date ? new Date(date).toISOString() : null;
+            const existing = urlMap.get(normalized);
+            if (!existing || (isoDate && (!existing || isoDate > existing))) {
+                urlMap.set(normalized, isoDate);
+            }
+        };
+
+        STATIC_ROUTES.forEach((route) => registerUrl(route));
+        sourceList.forEach((source) => registerUrl(source.url, source.date));
+
+        const nowIso = new Date().toISOString();
+        const urlEntries = Array.from(urlMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+        const xmlBody = urlEntries
+            .map(([route, lastmod]) => {
+                const loc = `${CANONICAL_BASE_URL}${route === '/' ? '' : route}`;
+                const mod = lastmod || nowIso;
+                return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${mod}</lastmod>\n  </url>`;
+            })
+            .join('\n');
+
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${xmlBody}\n</urlset>\n`;
+        fs.writeFileSync(SITEMAP_FILE, xml, 'utf-8');
+        console.log(`Sitemap updated with ${urlEntries.length} entries.`);
+    } catch (error) {
+        console.error('Failed to generate sitemap:', error);
+    }
 }
 
 forge().catch(console.error);
